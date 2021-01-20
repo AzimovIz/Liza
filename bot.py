@@ -1,5 +1,4 @@
 #import pyttsx3
-# import pyttsx3
 import sqlite3
 import time
 import random
@@ -9,7 +8,6 @@ from discord.ext import commands
 from sw import swich
 from txt import opts, ansr
 
-#from defs import *
 #Setup
 global notes_c, cursor_n
 notes_c = sqlite3.connect(str('notes.db'))
@@ -19,11 +17,6 @@ cursor_n = notes_c.cursor()
 
 client = commands.Bot(command_prefix = '/')
 
-''' yandex_music
-from yandex_music.client import Client as Ymcl
-ymclient = Ymcl()
-ymclient = Ymcl.from_credentials('Vilenskiianton', '12345678@')
-'''
 
 protocol=[[False],[0]]
 global cnl, log, id_n
