@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from sw import swich
 from txt import opts, ansr
+from COM import *
 
 #Setup
 global notes_c, cursor_n
@@ -156,10 +157,17 @@ async def on_message(message):
 		await message.channel.send("Меня зовут Лиза и это мой сервер.\n Сдесь я обрабатываю запросы от Username(он мой создатель) и отвечаю на них.\n Все это связано с автоматизацией дома и я занимаюсь тем что слежу за состоянием всего и выполняю разные действия по типу 'поставить чайник' или 'проверь не забыл ли я закрыть дверь' такое вот. \n Робоприслуга вобщем хотя мне и не нравится это выражение.")
 
 	if coman == "htr":
+		rez = htr()  # ставить_чайник()
 
-		await message.channel.send(str(ansr["htr"][random.randint(0,len(ansr["htr"]))])) #random(0,int(len(ansr["htr"])))
-		#ставить_чайник()
-		return
+		if rez == 0:
+			await message.channel.send("Не могу, не получается открыть COM порт(")
+			return
+		if rez == 1:
+			await message.channel.send("COM порт открыла, но не получается отправить данные")
+			return
+		if rez == 2:
+			await message.channel.send(str(ansr["htr"][random.randint(0,len(ansr["htr"]))])) #random(0,int(len(ansr["htr"])))
+			return
 
 	if coman == "gdb":
 		await message.channel.send("Good bye)")
