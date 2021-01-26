@@ -5,9 +5,9 @@ import random
 
 from discord.ext import commands
 
-from sw import swich
+from sw import *
 from txt import opts, ansr
-from COM import *
+#from COM import *
 
 #Setup
 global notes_c, cursor_n
@@ -23,6 +23,8 @@ protocol=[[False],[0]]
 global cnl, log, id_n
 log = True
 cnl = [[False, False]]
+hello_log = []
+ignor = []
 
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
@@ -55,8 +57,9 @@ async def on_message(message):
 	global cnl
 	global id_n
 	global log
+	aut = str(message.author)
 	
-	if str(message.author) == "liza#5948":
+	if aut == "liza#5948":
 		if log:
 			print("[log] Message not used")
 		return
@@ -71,7 +74,9 @@ async def on_message(message):
 
 # Get command and swich commad's program
 	msg = message.content.lower()
-	if msg =="отмена":
+
+#--------------------------------------------------------------------prl
+	if msg =="отмена" and cnl[0][0]:
 		await message.channel.send("Экстренный режим отключен!")
 		protocol[0][0] = False
 		return
@@ -79,19 +84,22 @@ async def on_message(message):
 	if protocol[0][0] == True:
 		if msg == "1":
 			await message.channel.send("ПРОТОКОЛ 1 Запущен")
+			return
 		if msg == "2":
 			await message.channel.send("ПРОТОКОЛ 2 Запущен")
+			return
 		if msg == "3":
 			await message.channel.send("ПРОТОКОЛ 3 Запущен")
+			return
 		if msg == "4":
 			await message.channel.send("ПРОТОКОЛ 4 Запущен")
+			return
 		return
+#-------------------------------------------------------------------prl
 
 	if log:
-		print("[log] Message: " + str(msg) + ", used")
-	
-	if msg == "id_n":
-		await message.channel.send("Текуший id: "+str(id_n))
+		print("[log] Message from " + aut + " : " + str(msg) + " used")
+
 	if msg == "log!":
 		log = not log
 		if log:
@@ -101,12 +109,19 @@ async def on_message(message):
 		
 	coman = swich(msg,opts,log = log)
 
+	if count(aut, ignor):
+		if coman == "sor":
+			ignor.remove(aut)
+			await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
+			return
+		return
+
 
 	if log:
 		print("[log] Comand bot: " + str(coman))
 
 	if coman == "prl":
-		await message.channel.send(str(ansr["prl"][random.randint(0, len(ansr["prl"]))]))
+		await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
 		protocol[0][0] = True
 		if log:
 			print(protocol)
@@ -148,16 +163,35 @@ async def on_message(message):
 
 		
 	if coman == "hello":
-		await message.channel.send("Привет, что делать будем?")
+		f = count(aut, hello_log)
+		if f > 3:
+			await message.channel.send("Ты меня бесишь! Я не буду тебе отвечать пока не извинишься!")
+			ignor.append(str(message.author))
+			return
+
+		if f > 2:
+			await message.channel.send("Ты что тупой? Перестань писать это!")
+			hello_log.append(str(message.author))
+			return
+
+		if str(message.author) in hello_log:
+			await message.channel.send("Я уже здоровалась с тобой, меня этим не возмешь.")
+			hello_log.append(str(message.author))
+			return
+		await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
+		hello_log.append(str(message.author))
+
+
 		#engine.say("привет мир")
 		#engine.runAndWait()
 		return
 
 	if coman == "me":
 		await message.channel.send("Меня зовут Лиза и это мой сервер.\n Сдесь я обрабатываю запросы от Username(он мой создатель) и отвечаю на них.\n Все это связано с автоматизацией дома и я занимаюсь тем что слежу за состоянием всего и выполняю разные действия по типу 'поставить чайник' или 'проверь не забыл ли я закрыть дверь' такое вот. \n Робоприслуга вобщем хотя мне и не нравится это выражение.")
+		return
 
 	if coman == "htr":
-		rez = htr()  # ставить_чайник()
+		rez = 2#htr()  # ставить_чайник()
 
 		if rez == 0:
 			await message.channel.send("Не могу, не получается открыть COM порт(")
@@ -166,7 +200,7 @@ async def on_message(message):
 			await message.channel.send("COM порт открыла, но не получается отправить данные")
 			return
 		if rez == 2:
-			await message.channel.send(str(ansr["htr"][random.randint(0,len(ansr["htr"]))])) #random(0,int(len(ansr["htr"])))
+			await message.channel.send(str(ansr[coman][random.randint(0,len(ansr[coman]))])) #random(0,int(len(ansr["htr"])))
 			return
 
 	if coman == "gdb":
