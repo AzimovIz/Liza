@@ -6,6 +6,7 @@ p = subprocess.check_output("python -m serial.tools.list_ports")
 ports = p.replace("\n", " ").split()
 for i in range(len(ports)):
     print("port " + str(i) + " : " + ports[i])
+
 port_n = input('Input port number: ')
 print("Your select : " + str(ports[int(port_n)]))
 port = ports[int(port_n)]
