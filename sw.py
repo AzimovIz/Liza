@@ -56,3 +56,10 @@ def swich (d, text, lvl=3, rvs = False, log=False, err = 50):
 
 	#S.rstrip([chars])	Удаление пробельных символов в конце строки
 	#S.replace(шаблон, замена)	Замена шаблона
+
+def count(text,mass):
+	d=0
+	for i in range(len(mass)):
+		if text == mass[i]:
+			d = d + 1
+	return(d)

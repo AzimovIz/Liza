@@ -164,12 +164,12 @@ async def on_message(message):
 		
 	if coman == "hello":
 		f = count(aut, hello_log)
-		if f > 3:
+		if f > 2:
 			await message.channel.send("Ты меня бесишь! Я не буду тебе отвечать пока не извинишься!")
 			ignor.append(str(message.author))
 			return
 
-		if f > 2:
+		if f > 1:
 			await message.channel.send("Ты что тупой? Перестань писать это!")
 			hello_log.append(str(message.author))
 			return
