@@ -31,11 +31,28 @@ def htr():
     ser.close()
     return(2)
 
-def com2():
-    pass
-
-def com3():
-    pass
+def lth():
+    try:
+        ser.isOpen()
+    except:
+        return (0)
+    try:
+        ser.write("l")
+    except:
+        return (1)
+    ser.close()
+    return (2)
+def lto():
+    try:
+        ser.isOpen()
+    except:
+        return (0)
+    try:
+        ser.write("lo")
+    except:
+        return (1)
+    ser.close()
+    return (2)
 
 while ser.inWaiting() == 0:
     pass
