@@ -109,7 +109,7 @@ async def on_message(message):
 		
 	coman = swich(msg,opts,log = log)
 
-	if count(aut, ignor):
+	if count(aut, ignor):  #sorry()
 		if coman == "sor":
 			ignor.remove(aut)
 			await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
@@ -126,7 +126,6 @@ async def on_message(message):
 		if log:
 			print(protocol)
 		return
-
 
 	if coman == "nyd": #день
 		if log:
@@ -161,25 +160,24 @@ async def on_message(message):
 
 		await message.channel.send("Это все заметки за последнюю неделю")
 
-		
 	if coman == "hello":
 		f = count(aut, hello_log)
 		if f > 2:
 			await message.channel.send("Ты меня бесишь! Я не буду тебе отвечать пока не извинишься!")
-			ignor.append(str(message.author))
+			ignor.append(aut)
 			return
 
 		if f > 1:
 			await message.channel.send("Ты что тупой? Перестань писать это!")
-			hello_log.append(str(message.author))
+			hello_log.append(aut)
 			return
 
 		if str(message.author) in hello_log:
 			await message.channel.send("Я уже здоровалась с тобой, меня этим не возмешь.")
-			hello_log.append(str(message.author))
+			hello_log.append(aut)
 			return
 		await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
-		hello_log.append(str(message.author))
+		hello_log.append(aut)
 
 
 		#engine.say("привет мир")
@@ -187,7 +185,7 @@ async def on_message(message):
 		return
 
 	if coman == "me":
-		await message.channel.send("Меня зовут Лиза и это мой сервер.\n Сдесь я обрабатываю запросы от Username(он мой создатель) и отвечаю на них.\n Все это связано с автоматизацией дома и я занимаюсь тем что слежу за состоянием всего и выполняю разные действия по типу 'поставить чайник' или 'проверь не забыл ли я закрыть дверь' такое вот. \n Робоприслуга вобщем хотя мне и не нравится это выражение.")
+		await message.channel.send(str(ansr[coman][random.randint(0,len(ansr[coman]))]))
 		return
 
 	if coman == "htr":
@@ -228,9 +226,31 @@ async def on_message(message):
 		cnl[0][0] = True
 		return
 
-	if coman == "ntr":
-		pass
+	if coman == "lht":
+		rez = 2# lht()  # свет()
 
+		if rez == 0:
+			await message.channel.send("Не могу, не получается открыть COM порт(")
+			return
+		if rez == 1:
+			await message.channel.send("COM порт открыла, но не получается отправить данные")
+			return
+		if rez == 2:
+			await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
+			return
+
+	if coman == "lto":
+		rez = 2# lto()  # свет()
+
+		if rez == 0:
+			await message.channel.send("Не могу, не получается открыть COM порт(")
+			return
+		if rez == 1:
+			await message.channel.send("COM порт открыла, но не получается отправить данные")
+			return
+		if rez == 2:
+			await message.channel.send(str(ansr[coman][random.randint(0, len(ansr[coman]))]))
+			return
 
 
 
