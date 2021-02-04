@@ -42,6 +42,7 @@ def lth():
         return (1)
     ser.close()
     return (2)
+
 def lto():
     try:
         ser.isOpen()

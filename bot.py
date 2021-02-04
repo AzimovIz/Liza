@@ -11,7 +11,7 @@ from txt import opts, ansr
 #from COM import *
 
 #Setup
-global notes_c, cursor_n
+global notes_c, cursor_n, note
 notes_c = sqlite3.connect(str('notes.db'))
 cursor_n = notes_c.cursor()
 
@@ -71,17 +71,18 @@ async def on_message(message):
 	global id_n
 	global log
 	global nastroi
+	global note
 	aut = str(message.author)
 	
 	if aut == "liza#5948":
 		if log:
 			print("[log] Message not used")
 		return
+
 	if cnl[0][0]:
-		cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)", (id_n+1, message.content.lower(), time.time(), 2*60*60+time.time(), 4))
-		notes_c.commit()
-		id_n = id_n + 1
-		await message.channel.send("Запомнила)")
+		await message.channel.send("Тебе напоминать?")
+		note = message.content.lower()
+		cnl[0][1] = True
 		cnl[0][0] = False
 		return
 
@@ -90,7 +91,7 @@ async def on_message(message):
 	msg = message.content.lower()
 
 #--------------------------------------------------------------------prl
-	if msg =="отмена" and cnl[0][0]:
+	if msg =="отмена" and protocol[0][0]:
 		await message.channel.send("Экстренный режим отключен!")
 		protocol[0][0] = False
 		return
@@ -121,13 +122,34 @@ async def on_message(message):
 		else:
 			await message.channel.send("Логирование отключено!")
 
-	if mess_compl[0] == True:
-		if msg == "да":
-			#cursor_n.execute(f"UPDATE complete SET 0 FROM note WHERE id = (?)", (mess_compl[1]))
-			#notes_c.commit()
-			pass
+
+	if msg == "да":
+		if mess_compl[0] == True:
+			cursor_n.execute(f"UPDATE note SET complete = 1 WHERE id = ?", (str(mess_compl[1])))
+			notes_c.commit()
+			await message.channel.send("Отметила!")
+			mess_compl[0] = False
+		if cnl[0][1] == True:
+			cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",(id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 0))
+			notes_c.commit()
+			id_n = id_n + 1
+			await message.channel.send("Запомнила)")
+			cnl[0][1] = False
 		return
 
+	if msg == "нет":
+		if mess_compl[0] == True:
+			#cursor_n.execute(f"UPDATE note SET complete = 0 WHERE id = ?", (str(mess_compl[1])))
+			#notes_c.commit()
+			await message.channel.send("Значит еще напомню, позже")
+			mess_compl[0] = False
+		if cnl[0][1] == True:
+			cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",(id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 1))
+			notes_c.commit()
+			id_n = id_n + 1
+			await message.channel.send("Запомнила)")
+			cnl[0][1] = False
+		return
 
 	coman = swich(msg,opts,log = log)#-------------------------------swich(msg)
 
@@ -264,8 +286,9 @@ async def on_message(message):
 		return
 
 	if coman == "ntp":
-		await message.channel.send("Что мне напомнить тебе?")
+		await message.channel.send("Что нужно запомнить?")
 		cnl[0][0] = True
+
 		return
 
 	if coman == "lht":
@@ -298,11 +321,12 @@ async def on_message(message):
 
 async def budos():
 	global mess_compl
+	text = []
 	if log:
 		print("[Log] Budos start")
 	while True:
-		await asyncio.sleep(1320)
-		#time.sleep(1320)
+		text = []
+		await asyncio.sleep(60)#1320)
 
 		if log:
 			print("[Log] New loop budos")
@@ -310,18 +334,27 @@ async def budos():
 		cursor_n.execute("SELECT * FROM note ORDER BY time")
 		id_f = cursor_n.fetchall()
 		for i in range(len(id_f)):
-			if int(id_f[i][4]) != 0:
+			if log:
+				print("[Log] Note: "+str(i)+" complete = "+ str(id_f[i][4]))
+			if int(id_f[i][4]) == 0:
+
 				id_ft = time.localtime(int(id_f[i][3]))#budos
-				if id_ft < time.time():
-					text = "Заметка на "+ str(id_ft.tm_mday) + "." + str(id_ft.tm_mon) + "." + str(id_ft.tm_year) + " " + str(id_ft.tm_hour) + ":" + str(id_ft.tm_min) + " Текст: " + str(id_n[i][1]) + "\n Выполнена?"
-					await Sender(text)
+				if log:
+					print("[Log] Getting time ok")
+					print(f"[Log] Note on: {id_ft.tm_hour}:{id_ft.tm_min}")
+					print(f"[Log] Now: {time.localtime().tm_hour}:{time.localtime().tm_min}")
+
+				if time.mktime(time.localtime()) > time.mktime(id_ft):
+					text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nВыполнена?")
+
 					mess_compl[0]=True
 					mess_compl[1]=int(id_f[i][0])
-					break
-				if id_ft < time.time()+60*60*2:
-					text = "Заметка на " + str(id_ft.tm_mday) + "." + str(id_ft.tm_mon) + "." + str(id_ft.tm_year) + " " + str(id_ft.tm_hour) + ":" + str(id_ft.tm_min) + " Текст: " + str(id_n[i][1]) + "\nНе забудь!!!"
-					await Sender(text)
-					break
+
+				if time.mktime(id_ft)-60*60*2 < time.mktime(time.localtime()) and time.mktime(id_ft) > time.mktime(time.localtime()):
+					text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nНе забудь!")
+
+		for i in text:
+			await Sender(i)
 
 
 
