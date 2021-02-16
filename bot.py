@@ -2,7 +2,6 @@
 import sqlite3
 import time
 import random
-import discord
 from discord.ext import commands
 import asyncio
 
@@ -306,7 +305,7 @@ async def on_message(message):
 		return
 
 	if coman == "lto":
-		rez = 2# lto()  # свет()
+		rez = 2#lto()  # свет()
 
 		if rez == 0:
 			await message.channel.send("Не могу, не получается открыть COM порт(")

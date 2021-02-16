@@ -11,13 +11,23 @@ port_n = input('Input port number: ')
 print("Your select : " + str(ports[int(port_n)]))
 port = ports[int(port_n)]
 
-ser = serial.Serial(
-    port = port,
-    baudrate=9600,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=None)
+def opens():
+    ser = serial.Serial(
+        port = port,
+        baudrate=9600,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        timeout=None)
+
+def reader():
+    while True:
+        result = None
+        while ser.inWaiting() == 0:
+            pass
+        result = ser.readline()
+        if result != None:
+            return result
 
 def htr():
     try:
