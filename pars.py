@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def pars(log=False, url = 'http://anime.reactor.cc'):
+def pars(log=False, url = 'http://reactor.cc'):
     r = requests.get(url)
     if log:
         print(f"[log] Requests status: {r.status_code}")
