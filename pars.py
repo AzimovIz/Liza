@@ -2,8 +2,8 @@ import requests
 import os
 from bs4 import BeautifulSoup
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
-        "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
-        "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
+        "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new"]#,
+        #"http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
 def check():
 	os.chdir("img/")
