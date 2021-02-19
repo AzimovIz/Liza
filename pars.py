@@ -1,8 +1,15 @@
 import requests
+import os
 from bs4 import BeautifulSoup
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
+
+def check():
+	os.chdir("img/")
+	p = os.listdir()
+	os.chdir("..")
+	return(p)
 
 def pars(log=False, url = 'http://reactor.cc'):
     r = requests.get(url)

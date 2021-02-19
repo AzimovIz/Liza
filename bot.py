@@ -1,10 +1,12 @@
 #import pyttsx3
+import os
 import sqlite3
 import time
 import random
 from discord.ext import commands
+from discord import File
 import asyncio
-
+from pars import *
 from sw import *
 from txt import opts, ansr
 #from COM import *
@@ -42,7 +44,24 @@ async def Sender(msg):
 					await channel.send(msg)
 	return
 
-
+async def react_sender():
+	timer = 0
+	while True:
+		downloader(log=True)
+		await asyncio.sleep(60*60*3)
+		timer = timer + 1
+		if timer>2:
+			timer=0
+			for guild in client.guilds:
+				if str(guild) == "Liza":
+					for channel in guild.channels:
+						if str(channel) == "картинки":
+							for i in check():
+								try:
+									await channel.send(file=File(f'img/{i}'))#6498888.jpeg#await channel.send(file=discord.File(f'img/{i}'))
+									os.remove(f'img/{i}')
+								except:
+									await channel.send(f'Не смогла отправить {i}, слишком большой(')
 
 
 
@@ -54,14 +73,6 @@ async def on_ready():
 	await Sender("Я запустилась!")
 
 	#await message.channel.send("Я онлайн)")
-
-
-''' 
-команда которая не хочет работать
-@client.command(pass_context = True)
-async def hello(ctx):
-	await ctx.send('Привет! Я запустилась')
-'''
 
 
 @client.event
@@ -325,7 +336,7 @@ async def budos():
 		print("[Log] Budos start")
 	while True:
 		text = []
-		await asyncio.sleep(60)#1320)
+		await asyncio.sleep(60*60*2)#1320)
 
 		if log:
 			print("[Log] New loop budos")
@@ -358,6 +369,7 @@ async def budos():
 
 
 client.loop.create_task(budos())
+client.loop.create_task(react_sender())
 
 token = open('token.txt', 'r').readline()
 client.run(token)
