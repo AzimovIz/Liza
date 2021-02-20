@@ -4,8 +4,11 @@ from bs4 import BeautifulSoup
 import sqlite3
 
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
-        "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new"]#,
-        #"http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
+        "http://anime.reactor.cc/tag/Anime+Ero/new",
+        "http://anime.reactor.cc/new",
+        "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
+        "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
+        "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
 img_c = sqlite3.connect(str('notes.db'))
 cursor_i = img_c.cursor()

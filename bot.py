@@ -367,6 +367,7 @@ async def budos():
 async def react_sender():
 	timer = 1
 	while True:
+		await asyncio.sleep(60 * 60 * 2)
 		downloader(log=True)
 		timer = timer + 1
 		if timer>1:
@@ -375,20 +376,18 @@ async def react_sender():
 				if str(guild) == "Liza":
 					for channel in guild.channels:
 						if str(channel) == "картинки":
-							n=0
-							for i in check():
-								n=n+1
+							for n in range(12):
+								i = random.choice(check())
 								size = os.path.getsize(f'img/{i}')
 								if size < 8300000:
 									try:
 										await channel.send(file=File(f'img/{i}'))  # 6498888.jpeg#await channel.send(file=discord.File(f'img/{i}'))
-										os.remove(f'img/{i}')
 									except:
-										await channel.send(f'Не смогла отправить {i}, посмотришь сам')
-							if n > 12:
-								await asyncio.sleep(60 * 60 * 2)
-								return
-		await asyncio.sleep(60 * 60 * 2)
+										pass
+								os.remove(f'img/{i}')
+								if n > 12:
+									break
+
 
 
 
