@@ -18,7 +18,7 @@ def distance(a, b):
 
 def swich (d, text, lvl=3, rvs = False, log=False, err = 50):
 
-	spam = ["?", "!", "."]
+	spam = ["?", "!", ".", ")"]
 	s = d
 	for i in range(len(spam)):
 	 	s = s.replace(spam[i], "")

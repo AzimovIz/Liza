@@ -2,11 +2,14 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import sqlite3
+import random
 
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://anime.reactor.cc/tag/Anime+Ero/new",
         "http://anime.reactor.cc/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
+        "http://anime.reactor.cc/tag/Megane",
+        "http://anime.reactor.cc/tag/Anime+Original",
         "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
@@ -14,20 +17,16 @@ img_c = sqlite3.connect(str('notes.db'))
 cursor_i = img_c.cursor()
 
 def get_old():
-    cursor_i.execute("SELECT name FROM imgs")
+    cursor_i.execute("SELECT name FROM imgs ORDER BY name DESC")
     ld_list1 = cursor_i.fetchall()
     old=[]
     for i in ld_list1:
         old.append(i[0])
     return(old)
 
-def check():
-	os.chdir("img/")
-	p = os.listdir()
-	os.chdir("..")
-	return(p)
 
-def pars(log=False, url = 'http://reactor.cc'):
+
+def pars(log=False, url = 'http://anime.reactor.cc/new'):
     r = requests.get(url)
     if log:
         print(f"[log] Requests status: {r.status_code}")
@@ -46,8 +45,12 @@ def pars(log=False, url = 'http://reactor.cc'):
     return(links)
 
 def downloader(log=False):
-    for l in urls:
-        links = pars(log=log, url=l)
+
+    for i in range(4):
+        try:
+            links = pars(log=log, url=urls[random.randint(0, len(urls))])
+        except:
+            links = pars(log=log, url=urls[random.randint(0, len(urls))])
 
         for i in links:
             r = requests.get(i, allow_redirects=True)
