@@ -13,6 +13,8 @@ urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
+num_url = 3
+
 img_c = sqlite3.connect(str('notes.db'))
 cursor_i = img_c.cursor()
 
@@ -46,7 +48,7 @@ def pars(log=False, url = 'http://anime.reactor.cc/new'):
 
 def downloader(log=False):
 
-    for i in range(4):
+    for i in range(num_url):
         try:
             links = pars(log=log, url=urls[random.randint(0, len(urls))])
         except:
