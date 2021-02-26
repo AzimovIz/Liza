@@ -14,6 +14,7 @@ from txt import opts, ansr
 
 # Setup
 global notes_c, cursor_n, note
+
 notes_c = sqlite3.connect(str('notes.db'))
 cursor_n = notes_c.cursor()
 
@@ -357,12 +358,12 @@ async def budos():
         print("[Log] Budos start")
     while True:
         text = []
-        await asyncio.sleep(60 * 60 * 2)  # 1320)
+        await asyncio.sleep(60*60*1,5)
 
         if log:
             print("[Log] New loop budos")
 
-        cursor_n.execute("SELECT * FROM note ORDERED BY time")
+        cursor_n.execute("SELECT * FROM note ORDER BY time")
         id_f = cursor_n.fetchall()
         for i in range(len(id_f)):
             if log:
@@ -413,9 +414,7 @@ async def react_sender():
         for n in range(12):
             i = random.choice(check())
             await Sender_msg(i)
-            if n > 12:
-                await Sender("Пока хватит)")
-                break
+
 
 
 client.loop.create_task(budos())
