@@ -47,12 +47,12 @@ def pars(log=False, url = 'http://anime.reactor.cc/new'):
     return(links)
 
 def downloader(log=False):
-    urlink = random.shuffle(urls)
+    random.shuffle(urls)
     for i in range(num_url):
         try:
-            links = pars(log=log, url=urlink[i])
+            links = pars(log=log, url=urls[i])
         except:
-            links = pars(log=log, url=urlink[i])
+            links = pars(log=log, url=urls[i])
 
         for i in links:
             r = requests.get(i, allow_redirects=True)
@@ -69,6 +69,6 @@ def downloader(log=False):
                     print(f"{i[(i.rfind('-')+1):]} download!")
     return(True)
 
-#print(downloader(log=True))
+print(downloader(log=True))
 
 
