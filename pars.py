@@ -13,7 +13,7 @@ urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
-num_url = 6
+
 
 img_c = sqlite3.connect(str('notes.db'))
 cursor_i = img_c.cursor()
@@ -46,7 +46,7 @@ def pars(log=False, url = 'http://anime.reactor.cc/new'):
     links.pop(0)
     return(links)
 
-def downloader(log=False):
+def downloader(log=False, num_url = 6):
     random.shuffle(urls)
     for i in range(num_url):
         try:
@@ -69,6 +69,6 @@ def downloader(log=False):
                     print(f"{i[(i.rfind('-')+1):]} download!")
     return(True)
 
-print(downloader(log=True))
+#print(downloader(log=True))
 
 

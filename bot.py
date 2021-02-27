@@ -33,6 +33,8 @@ nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
+num_url = 6
+
 try:
     id_n = cursor_n.fetchall()[-1][0]
 except:
@@ -61,13 +63,17 @@ async def Sender_msg(i):
                     os.remove(f'img/{i}')
     return
 
-
+start_ = True
 @client.event
 async def on_ready():
+    global start_
     if log:
         print('ok')
 
-    await Sender("Я запустилась!")
+    if start_:
+        await Sender("Я запустилась!")
+
+    start_ = False
 
 
 # await message.channel.send("Я онлайн)")
@@ -121,6 +127,16 @@ async def on_message(message):
 
     if log:
         print("[log] Message from " + aut + " : " + str(msg) + " used")
+
+    if msg.startswith("set"):
+        s = msg.split()
+        try:
+            globals()[s[1]] = int(s[2])
+        except:
+            await Sender("Ошибка!")
+            return
+        await Sender("Переменная успешно изменена!")
+        return
 
     if msg == "log!":
         log = not log
@@ -400,13 +416,14 @@ def check():
 
 
 async def react_sender():
+    global num_url
     if log:
         print("[Log] React start")
     while True:
 
         await asyncio.sleep(60 * 60 * 1,5)
 
-        downloader(log=True)
+        downloader(log=True, num_url=num_url)
 
         if log:
             print("[Log] New loop react_sender")
