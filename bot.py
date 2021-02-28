@@ -138,6 +138,11 @@ async def on_message(message):
         await Sender("Переменная успешно изменена!")
         return
 
+    if msg == "help":
+        pass
+        return
+
+
     if msg == "log!":
         log = not log
         if log:
@@ -152,8 +157,7 @@ async def on_message(message):
             await message.channel.send("Отметила!")
             mess_compl[0] = False
         if cnl[0][1] == True:
-            cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",
-                             (id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 0))
+            cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",(id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 0))
             notes_c.commit()
             id_n = id_n + 1
             await message.channel.send("Запомнила)")
@@ -167,8 +171,7 @@ async def on_message(message):
             await message.channel.send("Значит еще напомню, позже")
             mess_compl[0] = False
         if cnl[0][1] == True:
-            cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",
-                             (id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 1))
+            cursor_n.execute(f"INSERT INTO note VALUES (?, ?, ?, ?, ?)",(id_n + 1, note, time.time(), 2 * 60 * 60 + time.time(), 1))
             notes_c.commit()
             id_n = id_n + 1
             await message.channel.send("Запомнила)")
@@ -225,9 +228,7 @@ async def on_message(message):
                 if log:
                     print("[Log] note: " + id_n[i][1])
 
-                await message.channel.send(
-                    "Заметка от " + str(id_nt.tm_mday) + "." + str(id_nt.tm_mon) + "." + str(id_nt.tm_year) + " " + str(
-                        id_nt.tm_hour) + ":" + str(id_nt.tm_min) + " Текст: " + str(id_n[i][1]))
+                await message.channel.send("Заметка от " + str(id_nt.tm_mday) + "." + str(id_nt.tm_mon) + "." + str(id_nt.tm_year) + " " + str(id_nt.tm_hour) + ":" + str(id_nt.tm_min) + " Текст: " + str(id_n[i][1]))
 
         await message.channel.send("Это все заметки за последние сутки")
         return
@@ -243,9 +244,7 @@ async def on_message(message):
                 if log:
                     print("[Log] note: " + id_n[i][1])
 
-                await message.channel.send(
-                    "Заметка от " + str(id_nt.tm_mday) + "." + str(id_nt.tm_mon) + "." + str(id_nt.tm_year) + " " + str(
-                        id_nt.tm_hour) + ":" + str(id_nt.tm_min) + " Текст: " + str(id_n[i][1]))
+                await message.channel.send("Заметка от " + str(id_nt.tm_mday) + "." + str(id_nt.tm_mon) + "." + str(id_nt.tm_year) + " " + str(id_nt.tm_hour) + ":" + str(id_nt.tm_min) + " Текст: " + str(id_n[i][1]))
 
         await message.channel.send("Это все!")
         return
@@ -274,8 +273,7 @@ async def on_message(message):
         return
 
     if coman == "hay":
-        await message.channel.send(
-            ansr[coman + str(int(nastroi / 2))][random.randint(0, len(ansr[coman + str(int(nastroi / 2))]))])
+        await message.channel.send(ansr[coman + str(int(nastroi / 2))][random.randint(0, len(ansr[coman + str(int(nastroi / 2))]))])
         return
 
     if coman == "hay+":
@@ -317,15 +315,13 @@ async def on_message(message):
 
     if coman == "msc":
         await message.channel.send("Включаю музыку")
-        await message.channel.send(
-            "Не забудь проапгрейдить эту функцию у меня. Я хочу знать что ты хочешь послушать, а не включать все подряд")
+        await message.channel.send("Не забудь проапгрейдить эту функцию у меня. Я хочу знать что ты хочешь послушать, а не включать все подряд")
         # включать_музыку()
         return
 
     if coman == "wth":
         # получить_и_сказать погоду()
-        await message.channel.send(
-            "Поидее я должна сказать погоду, но мой создатель - ленивая жопа и не прикрутил мне эту функцию")
+        await message.channel.send("Поидее я должна сказать погоду, но мой создатель - ленивая жопа и не прикрутил мне эту функцию")
         return
 
     if coman == "rfl":
@@ -393,16 +389,13 @@ async def budos():
                     print(f"[Log] Now: {time.localtime().tm_hour}:{time.localtime().tm_min}")
 
                 if time.mktime(time.localtime()) > time.mktime(id_ft):
-                    text.append(
-                        f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nВыполнена?")
+                    text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nВыполнена?")
 
                     mess_compl[0] = True
                     mess_compl[1] = int(id_f[i][0])
 
-                if time.mktime(id_ft) - 60 * 60 * 2 < time.mktime(time.localtime()) and time.mktime(
-                        id_ft) > time.mktime(time.localtime()):
-                    text.append(
-                        f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nНе забудь!")
+                if time.mktime(id_ft) - 60 * 60 * 2 < time.mktime(time.localtime()) and time.mktime(id_ft) > time.mktime(time.localtime()):
+                    text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nНе забудь!")
 
         for i in text:
             await Sender(i)
