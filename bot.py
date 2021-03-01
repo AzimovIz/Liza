@@ -34,7 +34,10 @@ nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
+min_react = 70
 num_url = 6
+min_budos = 90
+num_img = 10
 
 try:
     id_n = cursor_n.fetchall()[-1][0]
@@ -371,12 +374,12 @@ async def on_message(message):
 
 
 async def budos():
-    global mess_compl
+    global mess_compl, min_budos
     if log:
         print("[Log] Budos start")
     while True:
         text = []
-        await asyncio.sleep(60*60*1,5)
+        await asyncio.sleep(60*min_budos)
 
         if log:
             print("[Log] New loop budos")
@@ -415,19 +418,19 @@ def check():
 
 
 async def react_sender():
-    global num_url
+    global num_url, min_react, num_img
     if log:
         print("[Log] React start")
     while True:
 
-        await asyncio.sleep(60 * 60 * 1,5)
+        await asyncio.sleep(60*min_react)
 
         downloader(log=True, num_url=num_url)
 
         if log:
             print("[Log] New loop react_sender")
 
-        for n in range(12):
+        for n in range(num_img):
             i = random.choice(check())
             await Sender_msg(i)
 
