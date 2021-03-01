@@ -2,6 +2,7 @@
 import os
 import sqlite3
 import time
+import sys
 import random
 from discord.ext import commands
 from discord import File
@@ -206,6 +207,11 @@ async def on_message(message):
             if n > 12:
                 await Sender("Пока хватит)")
                 return
+
+    if coman == "reb":
+        await  Sender("Перезапускаю react")
+        client.loop.create_task(react_sender())
+
 
     if coman == "prl":
         await message.channel.send(ansr[coman][random.randint(0, len(ansr[coman]))])
