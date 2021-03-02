@@ -34,7 +34,7 @@ nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
-min_react = 70
+min_react = 3
 num_url = 6
 min_budos = 90
 num_img = 10
@@ -134,12 +134,16 @@ async def on_message(message):
 
     if msg.startswith("set"):
         s = msg.split()
-        try:
-            globals()[s[1]] = int(s[2])
-        except:
-            await Sender("Ошибка!")
+        if s[1] in globals():
+            try:
+                globals()[s[1]] = int(s[2])
+            except:
+                await Sender("Ошибка!")
+                return
+            await Sender("Переменная успешно изменена!")
             return
-        await Sender("Переменная успешно изменена!")
+        else:
+            await Sender("Переменная не найдена")
         return
 
     if msg == "help":
@@ -204,12 +208,11 @@ async def on_message(message):
     if coman == "img":
         await message.channel.send(ansr[coman][random.randint(0, len(ansr[coman]))])
 
-        for n in range(12):
+        for n in range(num_img):
             i = random.choice(check())
             await Sender_msg(i)
-            if n > 12:
-                await Sender("Пока хватит)")
-                return
+        num = check()
+        await Sender(f'Осталось {len(num)} картинок')
 
     if coman == "reb":
         await  Sender("Перезапускаю react")
@@ -222,6 +225,15 @@ async def on_message(message):
         if log:
             print(protocol)
         return
+
+    if coman == "dgs":
+        await Sender("Запускаю диагностику! \nСтоит воздержаться от отправки сообщений до окончания проверки!")
+        tas = str(asyncio.all_tasks())
+        if "budos()" in tas:
+            await Sender("Budos work!")
+        if "react_sender()" in tas:
+            await Sender("React work!")
+        await Sender("Диагностика завершена")
 
     if coman == "nyd":  # день
         if log:
