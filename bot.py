@@ -34,10 +34,10 @@ nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
-min_react = 3
-num_url = 6
+min_react = 1
+num_url = 2
 min_budos = 90
-num_img = 10
+num_img = 3
 
 try:
     id_n = cursor_n.fetchall()[-1][0]
@@ -45,11 +45,11 @@ except:
     id_n = 0
 
 
-async def Sender(msg):
+async def Sender(msg, ch = "основной"):
     for guild in client.guilds:
         if str(guild) == "Liza":
             for channel in guild.channels:
-                if str(channel) == "основной":
+                if str(channel) == ch:
                     await channel.send(msg)
     return
 
@@ -433,6 +433,7 @@ async def react_sender():
     global num_url, min_react, num_img
     if log:
         print("[Log] React start")
+    last_chek = 1.00
     while True:
 
         await asyncio.sleep(60*min_react)
@@ -445,6 +446,12 @@ async def react_sender():
         for n in range(num_img):
             i = random.choice(check())
             await Sender_msg(i)
+
+        k = len(check())/last_chek
+
+        await Sender(f'Осталось картинок: {len(check())}', ch= "картинки")
+        await Sender(f'Коэфицент картинок: {k}', ch="логи")
+        last_chek = len(check())
 
 
 
