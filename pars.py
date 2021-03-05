@@ -3,28 +3,16 @@ import os
 from bs4 import BeautifulSoup
 import sqlite3
 import random
+import threading
 
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://anime.reactor.cc/tag/Anime+Ero/new",
-        "http://anime.reactor.cc/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
+        "http://anime.reactor.cc/tag/Anime+Ero+Pussy/new",
         "http://anime.reactor.cc/tag/Megane",
         "http://anime.reactor.cc/tag/Anime+Original",
         "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
-
-
-
-img_c = sqlite3.connect(str('notes.db'))
-cursor_i = img_c.cursor()
-
-def get_old():
-    cursor_i.execute("SELECT name FROM imgs ORDER BY name DESC")
-    ld_list1 = cursor_i.fetchall()
-    old=[]
-    for i in ld_list1:
-        old.append(i[0])
-    return(old)
 
 
 
@@ -46,6 +34,20 @@ def pars(log=False, url = 'http://anime.reactor.cc/new'):
     links.pop(0)
     return(links)
 
+def dw(s, r, log = False):
+    img_c = sqlite3.connect(str('notes.db'))
+    cursor_i = img_c.cursor()
+    try:
+        cursor_i.execute(f'INSERT INTO imgs VALUES (?)', (s,))
+        img_c.commit()
+        with open(f"img/{s}", 'wb') as file:
+            file.write(r.content)
+            if log:
+                print(f"{s} download!")
+    except:
+        if log:
+            print(f"{s} was download last!")
+
 def downloader(log=False, num_url = 6):
     random.shuffle(urls)
     for i in range(num_url):
@@ -55,20 +57,27 @@ def downloader(log=False, num_url = 6):
             links = pars(log=log, url=urls[i])
 
         for i in links:
+            s = str(i[(i.rfind('-') + 1):])
             r = requests.get(i, allow_redirects=True)
-            old_list = get_old()
-            if i[(i.rfind('-')+1):] in old_list:
-                if log:
-                    print(f"{i[(i.rfind('-') + 1):]} was download last!")
-            else:
-                open(f"img/{i[(i.rfind('-')+1):]}", 'wb').write(r.content)
-                cursor_i.execute(f'INSERT INTO imgs VALUES (?)', (i[(i.rfind('-')+1):],))
-                img_c.commit()
+            thread = threading.Thread(target=dw, args=[s, r, log])
+            thread.start()
 
+
+        '''for i in links:
+            s = str(i[(i.rfind('-') + 1):])
+            r = requests.get(i, allow_redirects=True)
+            try:
+                cursor_i.execute(f'INSERT INTO imgs VALUES (?)', (s,))
+                img_c.commit()
+                thread = threading.Thread(target=dw, args=[s, r, log])
+                thread.start()
+            except:
                 if log:
-                    print(f"{i[(i.rfind('-')+1):]} download!")
+                    print(f"{s} was download last!")'''
+
+
     return(True)
 
-#print(downloader(log=True))
+print(downloader(log=True))
 
 

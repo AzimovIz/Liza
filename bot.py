@@ -212,7 +212,7 @@ async def on_message(message):
             i = random.choice(check())
             await Sender_msg(i)
         num = check()
-        await Sender(f'Осталось {len(num)} картинок')
+        await Sender(f'Осталось {len(num)} картинок', ch= "картинки")
 
     if coman == "reb":
         await  Sender("Перезапускаю react")
@@ -438,10 +438,10 @@ async def react_sender():
 
         await asyncio.sleep(60*min_react)
 
-        downloader(log=True, num_url=num_url)
-
         if log:
             print("[Log] New loop react_sender")
+
+        downloader(log=True, num_url=num_url)
 
         for n in range(num_img):
             i = random.choice(check())
