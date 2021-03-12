@@ -10,6 +10,7 @@ import asyncio
 from pars import *
 from sw import *
 from txt import opts, ansr
+import threading
 
 # from COM import *
 
@@ -29,15 +30,16 @@ log = True
 cnl = [[False, False]]
 hello_log = []
 ignor = []
+text = []
 global nastroi, mess_compl
 nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
 
-min_react = 1
-num_url = 2
-min_budos = 90
-num_img = 3
+min_react = 15
+num_url = 3
+min_budos = 1
+num_img = 2
 
 try:
     id_n = cursor_n.fetchall()[-1][0]
@@ -126,6 +128,7 @@ async def on_message(message):
         if msg == "4":
             await message.channel.send("ПРОТОКОЛ 4 Запущен")
             return
+        await message.channel.send("ПРОТОКОЛ НЕ НАЙДЕН")
         return
     # --------------------------------------------------------------------prl
 
@@ -384,42 +387,59 @@ async def on_message(message):
             return
         return
 
+def budos_f():
+    global mess_compl, min_budos
+    global text
+    notes_c = sqlite3.connect(str('notes.db'))
+    cursor_n = notes_c.cursor()
+    cursor_n.execute("SELECT * FROM note ORDER BY time")
+    id_f = cursor_n.fetchall()
+    for i in range(len(id_f)):
+        if log:
+            print("[Log] Note: " + str(i) + " complete = " + str(id_f[i][4]))
+        if int(id_f[i][4]) == 0:
+
+            id_ft = time.localtime(int(id_f[i][3]))  # budos
+            if log:
+                print("[Log] Getting time ok")
+                print(f"[Log] Note on: {id_ft.tm_hour}:{id_ft.tm_min}")
+                print(f"[Log] Now: {time.localtime().tm_hour}:{time.localtime().tm_min}")
+
+            if time.mktime(time.localtime()) > time.mktime(id_ft):
+                text.append(
+                    f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nВыполнена?")
+
+                mess_compl[0] = True
+                mess_compl[1] = int(id_f[i][0])
+
+            if time.mktime(id_ft) - 60 * 60 * 2 < time.mktime(time.localtime()) and time.mktime(id_ft) > time.mktime(
+                    time.localtime()):
+                        text.append(
+                    f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nНе забудь!")
+
+    return
 
 async def budos():
-    global mess_compl, min_budos
+    global mess_compl, min_budos, text
     if log:
         print("[Log] Budos start")
     while True:
-        text = []
+
         await asyncio.sleep(60*min_budos)
 
         if log:
             print("[Log] New loop budos")
 
-        cursor_n.execute("SELECT * FROM note ORDER BY time")
-        id_f = cursor_n.fetchall()
-        for i in range(len(id_f)):
-            if log:
-                print("[Log] Note: " + str(i) + " complete = " + str(id_f[i][4]))
-            if int(id_f[i][4]) == 0:
+        threadn = threading.Thread(target=budos_f)
+        threadn.start()
 
-                id_ft = time.localtime(int(id_f[i][3]))  # budos
-                if log:
-                    print("[Log] Getting time ok")
-                    print(f"[Log] Note on: {id_ft.tm_hour}:{id_ft.tm_min}")
-                    print(f"[Log] Now: {time.localtime().tm_hour}:{time.localtime().tm_min}")
-
-                if time.mktime(time.localtime()) > time.mktime(id_ft):
-                    text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nВыполнена?")
-
-                    mess_compl[0] = True
-                    mess_compl[1] = int(id_f[i][0])
-
-                if time.mktime(id_ft) - 60 * 60 * 2 < time.mktime(time.localtime()) and time.mktime(id_ft) > time.mktime(time.localtime()):
-                    text.append(f"Заметка на {id_ft.tm_mday}.{id_ft.tm_mon}.{id_ft.tm_year}  {id_ft.tm_hour}:{id_ft.tm_min} Текст: {id_f[i][1]} \nНе забудь!")
+        while threadn.is_alive():
+            await asyncio.sleep(1)
 
         for i in text:
             await Sender(i)
+
+
 
 
 def check():
@@ -441,7 +461,8 @@ async def react_sender():
         if log:
             print("[Log] New loop react_sender")
 
-        downloader(log=True, num_url=num_url)
+        threads = threading.Thread(target=downloader, args=[log, log])
+        threads.start()
 
         for n in range(num_img):
             i = random.choice(check())

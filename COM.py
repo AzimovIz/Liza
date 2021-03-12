@@ -31,6 +31,7 @@ def reader():
 
 def htr():
     try:
+        opens()
         ser.isOpen()
     except:
         return(0)

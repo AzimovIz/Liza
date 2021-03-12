@@ -4,13 +4,14 @@ from bs4 import BeautifulSoup
 import sqlite3
 import random
 import threading
+threading.TIMEOUT_MAX = 60*6,0
 
 urls = ["http://anime.reactor.cc/tag/Anime+Ero+Ass/new",
         "http://anime.reactor.cc/tag/Anime+Ero/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Pantsu/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Pussy/new",
-        "http://anime.reactor.cc/tag/Megane",
-        "http://anime.reactor.cc/tag/Anime+Original",
+        "http://anime.reactor.cc/tag/Megane/new",
+        "http://anime.reactor.cc/tag/Anime+Original/new",
         "http://mfxgs3lf.ojswcy3un5zc4y3d.cmle.ru/tag/%D0%AD%D1%82%D1%82%D0%B8/new",
         "http://anime.reactor.cc/tag/Anime+Ero+Gifs/new"]
 
@@ -34,7 +35,9 @@ def pars(log=False, url = 'http://anime.reactor.cc/new'):
     links.pop(0)
     return(links)
 
-def dw(s, r, log = False):
+def dw(i, log = False):
+    s = str(i[(i.rfind('-') + 1):])
+    r = requests.get(i, allow_redirects=True)
     img_c = sqlite3.connect(str('notes.db'))
     cursor_i = img_c.cursor()
     try:
@@ -48,7 +51,7 @@ def dw(s, r, log = False):
         if log:
             print(f"{s} was download last!")
 
-def downloader(log=False, num_url = 6):
+def downloader(log=False, num_url = len(urls)):
     random.shuffle(urls)
     for i in range(num_url):
         try:
@@ -57,9 +60,9 @@ def downloader(log=False, num_url = 6):
             links = pars(log=log, url=urls[i])
 
         for i in links:
-            s = str(i[(i.rfind('-') + 1):])
-            r = requests.get(i, allow_redirects=True)
-            thread = threading.Thread(target=dw, args=[s, r, log])
+            #s = str(i[(i.rfind('-') + 1):])
+            #r = requests.get(i, allow_redirects=True)
+            thread = threading.Thread(target=dw, args=[i, log])
             thread.start()
 
 
@@ -75,9 +78,8 @@ def downloader(log=False, num_url = 6):
                 if log:
                     print(f"{s} was download last!")'''
 
-
     return(True)
 
-print(downloader(log=True))
+#print(downloader(log=True))
 
 
