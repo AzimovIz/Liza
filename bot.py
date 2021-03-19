@@ -11,6 +11,7 @@ from pars import *
 from sw import *
 from txt import opts, ansr
 import threading
+from analyser import *
 
 # from COM import *
 
@@ -35,6 +36,8 @@ global nastroi, mess_compl
 nastroi = 8
 mess_compl = [False, 0]
 cursor_n.execute("SELECT id FROM note ORDER BY id")
+
+lgo_img = [0,0,0,0,0,0]
 
 min_react = 15
 num_url = 3
@@ -394,6 +397,7 @@ def budos_f():
     cursor_n = notes_c.cursor()
     cursor_n.execute("SELECT * FROM note ORDER BY time")
     id_f = cursor_n.fetchall()
+    text=[]
     for i in range(len(id_f)):
         if log:
             print("[Log] Note: " + str(i) + " complete = " + str(id_f[i][4]))
@@ -448,15 +452,37 @@ def check():
     os.chdir("..")
     return (p)
 
+def rdr(s):
+    global num_img
+    r = analys(s)
+    if r==1:
+        num_img = num_img - 1
+        if num_img < 1:
+            num_img = 1
+    if r==2:
+        num_img = num_img + 1
+        if num_img > 10:
+            num_img = 10
+    return
+
+
+
+
 
 async def react_sender():
-    global num_url, min_react, num_img
+    global num_url, min_react, num_img, lgo_img
+
     if log:
         print("[Log] React start")
-    last_chek = 1.00
+    last_chek = len(check())
     while True:
 
-        await asyncio.sleep(60*min_react)
+        await asyncio.sleep(30*min_react)
+
+        threadi = threading.Thread(target=rdr, args=[lgo_img])
+        threadi.start()
+
+        await asyncio.sleep(30 * min_react)
 
         if log:
             print("[Log] New loop react_sender")
@@ -470,9 +496,13 @@ async def react_sender():
 
         k = len(check())/last_chek
 
+        lgo_img = add(lgo_img, k)
+
         await Sender(f'Осталось картинок: {len(check())}', ch= "картинки")
         await Sender(f'Коэфицент картинок: {k}', ch="логи")
         last_chek = len(check())
+
+
 
 
 
