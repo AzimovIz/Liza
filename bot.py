@@ -455,11 +455,11 @@ def check():
 def rdr(s):
     global num_img
     r = analys(s)
-    if r==1:
+    if r==2:
         num_img = num_img - 1
         if num_img < 1:
             num_img = 1
-    if r==2:
+    if r==1:
         num_img = num_img + 1
         if num_img > 10:
             num_img = 10
