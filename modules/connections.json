@@ -3,7 +3,13 @@
     {
       "sender": "telegram_bot_sender",
       "allowed_purposes": ["recognize_file"],
-      "acceptor": "vosk_acceptor"
+      "purposes_extensions": [
+        {
+          "purpose": "recognize_file",
+          "extensions": ["recognize_file_vosk"]
+        }
+      ],
+      "acceptors": ["vosk_acceptor"]
     }
   ]
 }

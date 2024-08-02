@@ -75,4 +75,5 @@ class Core:
                             event_connection_allowed = True
 
                         if event_connection_allowed:
-                            await self.MM.acceptor_queues[connection.acceptor].put(event)
+                            for acceptor in connection.acceptors:
+                                await self.MM.acceptor_queues[acceptor].put(event)

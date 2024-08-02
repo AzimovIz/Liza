@@ -5,4 +5,4 @@ from typing import List
 class Connection:
     sender: str
     allowed_purposes: List[str]
-    acceptor: str
+    acceptors: List[str]
