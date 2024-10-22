@@ -2,13 +2,13 @@ import asyncio
 import os.path
 from typing import List, Dict
 
-from connection import Connection, IOPair
+from config import config_loader, Connection, IOPair
 from event import EventTypes, Event
-from module_manager import ModuleManager, Intent
+from module_manager import ModuleManager
 from nlu import NLU
 import logging
 
-from utils.classes import Context
+from utils.classes import Context, Intent
 
 logging.basicConfig(
     encoding="utf-8",
@@ -20,26 +20,39 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="connections/connections.yml"):
+    def __init__(
+            self,
+            connection_config_path="connections/config.yml",
+            minimum_nlu_percent=0.69
+    ):
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load_file(connection_config_path)
-        self.io_pairs = IOPair.load_file(connection_config_path)
+        self.min_nlu_percent = minimum_nlu_percent
+        config = config_loader(connection_config_path)
+        self.connection_rules = config["rules"]
+        self.io_pairs = config["io_pairs"]
+        self._intent_examples = {}
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
 
-        for module in self.MM.list_modules():
-            if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
-                self.connection_rules.extend(Connection.load_file(module_conn))
-                self.io_pairs.extend(IOPair.load_file(module_conn))
-
     def init(self):
         self.MM.init_modules()
+
+        for module in self.MM.name_list:
+            if os.path.isfile(module_conn := f"modules/{module}/config.yml"):
+                module_config = config_loader(module_conn)
+                self.connection_rules.extend(module_config["rules"])
+                self.io_pairs.extend(module_config["io_pairs"])
+                self._intent_examples.update(module_config["intent_examples"])
+
         self._init_ext()
+
         if len(self.MM.intents) > 1:
-            self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.intents = [Intent(**i) for i in
+                            self.MM.intents]  #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+
             self.nlu = NLU(
-                intents={intent.name: intent.examples for intent in self.intents},
+                intents={intent.name: self._intent_examples[intent.name] for intent in self.intents},
             )
 
     def _init_ext(self):
@@ -56,7 +69,12 @@ class Core:
 
         command_str = event.value
         logger.debug(f"command: {command_str}")
-        intent = self.nlu.classify_text(text=command_str)
+        intent = self.nlu.classify_text(text=command_str, minimum_percent=self.min_nlu_percent)
+
+        if not len(intent):
+            await event.reply("Команда не найдена.")
+            return
+
         logger.debug(f"intent: {intent}")
         intent_name = intent[0][0]
 
@@ -68,8 +86,6 @@ class Core:
             )
 
         logger.debug(f"command: {command_str} start")
-
-    # def
 
     def get_out(self, name):
         for pair in self.io_pairs:
@@ -92,7 +108,8 @@ class Core:
 
                 event = await sender_queue.get()
                 # logger.debug(f"event: {event.value} принят")
-                event.out_queue = self.get_out(name)
+                if event.out_queue is None:
+                    event.out_queue = self.get_out(name)
 
                 if event.event_type == EventTypes.user_command:
                     event.set_context = self.preconfigure_context(event=event)
@@ -110,7 +127,7 @@ class Core:
         return self.MM.get_module(module_name)
 
     def preconfigure_context(self, event: Event):
-        async def setter(callback: callable, init_context_data: dict=None):
+        async def setter(callback: callable, init_context_data: dict = None):
             module_name = event.from_module
             if module_name in self.contexts:
                 raise Exception("Duplicate context, end exist context before create new context")
@@ -124,6 +141,7 @@ class Core:
             )
 
             await self.contexts[module_name].start()
+
         return setter
 
     async def del_context(self, event: Event):

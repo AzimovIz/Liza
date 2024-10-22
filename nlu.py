@@ -2,17 +2,19 @@
 # from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.neighbors import KNeighborsClassifier
+import logging
+
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 import torch
 from collections import Counter
-
+logger = logging.getLogger(__name__)
 
 class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
     # cointegrated/roberta-base-formality - 0.97
     # cointegrated/rubert-tiny2 - 0.86
-    # cointegrated/rubert-tiny2-sentence-compression
+    # cointegrated/rubert-tiny2-sentence-compression - 0.68
     def __init__(self, intents: dict, model_name='cointegrated/rubert-tiny2-sentence-compression'):
         self.intents = intents
         self.example_vectors = []
@@ -23,7 +25,7 @@ class NLU:
         self.update_intents()
 
     def embed_bert_cls(self, text):
-        t = self.tokenizer(text, padding=True, truncation=True, max_length=16, return_tensors='pt')
+        t = self.tokenizer(text, padding=True, truncation=True, max_length=32, return_tensors='pt')
         t = {k: v.to(self.model.device) for k, v in t.items()}
         with torch.no_grad():
             model_output = self.model(**t)
@@ -51,6 +53,8 @@ class NLU:
                 self.example_vectors.append(self.embed_bert_cls(text))
                 self.intent_names.append(intent)
         self.example_vectors = np.stack(self.example_vectors)
+
+        logger.info(f'Updated {self.intents.keys()}')
 
 #
 # class NLU_SL:
@@ -95,5 +99,5 @@ if __name__ == '__main__':
         "run_upd": ["выключи лампу", "выключи свет"],
     }
     nlu = NLU(intents=intents)
-    rez = nlu.classify_text("напомни завтра про врача")
+    rez = nlu.classify_text("когда мне будут проводить интернет")
     print(rez)

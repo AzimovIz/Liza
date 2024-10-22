@@ -15,6 +15,7 @@ class Event:
         self.purpose = purpose
         self.out_queue = out_queue
         self.from_module = from_module
+        self.context = None
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -40,7 +41,17 @@ class Event:
             )
 
     def copy(self):
-        return Event.from_dict(self.__dict__.copy())
+        data = dict(self.__dict__)
+        data.update(
+            {
+                "event_type": self.event_type,
+                "value": self.value,
+                "purpose": self.purpose,
+                "out_queue": self.out_queue,
+                "from_module": self.from_module,
+            }
+        )
+        return Event.from_dict(data)
 
     # @property
     # def context(self):
