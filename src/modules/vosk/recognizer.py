@@ -153,7 +153,6 @@ async def run_vosk(
     model_dir_path = f"modules/vosk/{model_name}"
 
     download_model_if_not_exited(model_name=model_name)
-    download_model_if_not_exited(model_name=spk_model)
 
     if vosk_model is None:
         vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
@@ -164,6 +163,7 @@ async def run_vosk(
     rec = vosk.KaldiRecognizer(vosk_model, 44100)
 
     if filter_spk:
+        download_model_if_not_exited(model_name=spk_model)
         spk_model = vosk.SpkModel(f"modules/vosk/{spk_model}")
         rec.SetSpkModel(spk_model)
 
