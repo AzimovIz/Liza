@@ -1,5 +1,6 @@
 import asyncio
 import os.path
+import pathlib
 from typing import List, Dict
 
 from config import config_loader, Connection, IOPair
@@ -33,6 +34,7 @@ class Core:
             connection_config_path: str = None,
             minimum_nlu_percent: float = None,
             forward_core_events: bool = None,
+            core_path: str = None,
     ):
         """
         Инициализация класса с настройками соединения и параметрами обработки NLU.
@@ -52,6 +54,7 @@ class Core:
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
         self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS") or 1))
+        self.path = core_path or pathlib.Path(__file__).parent.absolute()
 
     def init(self):
         """
@@ -60,7 +63,7 @@ class Core:
         self.MM.init_modules()
 
         for module in self.MM.name_list:
-            if os.path.isfile(module_conn := f"modules/{module}/config.yml"):
+            if os.path.isfile(module_conn := f"{self.path}/modules/{module}/config.yml"):
                 module_config = config_loader(module_conn)
                 self.connection_rules.extend(module_config["rules"])
                 self.io_pairs.extend(module_config["io_pairs"])
