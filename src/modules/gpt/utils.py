@@ -19,6 +19,8 @@ class GPTConfig:
     sys_prompt: str
     sys_context: str
     model: str
+    instruction_template: str
+    generator_parameters: dict
 
 
 gpt_config: GPTConfig = None
@@ -32,10 +34,17 @@ async def gpt_req(prompt, sys_prompt):
             {"role": "user", "content": prompt}
         ]
     }
+    headers = {"Content-Type": "application/json"}
+
     if gpt_config.model:
         data.update({"model": gpt_config.model})
 
-    headers = {"Content-Type": "application/json"}
+    if gpt_config.instruction_template:
+        data.update({"instruction_template_str": gpt_config.instruction_template})
+
+    if gpt_config.generator_parameters:
+        data.update(gpt_config.generator_parameters)
+
     if gpt_config.token:
         headers.update({"Authorization": f"Bearer {gpt_config.token}"})
 
@@ -96,6 +105,8 @@ async def init(config):
     sys_prompt = config["sys_prompt"]
     sys_context = config["sys_context"]
     model = config["model"]
+    instruction_template = config["instruction_template"]
+    generator_parameters = config["generator_parameters"]
 
     if gpt_config is None:
         gpt_config = GPTConfig(
@@ -103,5 +114,7 @@ async def init(config):
             token=token,
             sys_prompt=sys_prompt,
             sys_context=sys_context,
-            model=model
+            model=model,
+            instruction_template=instruction_template,
+            generator_parameters=generator_parameters
         )

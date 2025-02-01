@@ -5,7 +5,12 @@
   "config": {
     "openai_base": "",
     "token": "",
-    "sys_prompt": "",
-    "model": ""
+    "sys_prompt": "Ты ассистент который четко и правильно выполняет все команды. Не пиши ничего лишнего.",
+    "model": "",
+    "generator_parameters": {
+      "mode": "instruct",
+      "min_p": 0.2
+    },
+    "instruction_template": "{% if 'role' in messages[0] %}\n {% for message in messages %}\n  {% if message['role'] == 'user' %}\n    {{'<|im_start|>user' + message['content'] + '<|im_end|>'}}\n  {% elif message['role'] == 'assistant'%}\n    {{'<|im_start|>assistant' + message['content'] + '<|im_end|>' }}\n  {% else %}\n    {{ '<|im_start|>system' + message['content'] + '<|im_end|>' }}\n  {% endif %}\n {% endfor %}\n{% endif %}"
   }
 }
