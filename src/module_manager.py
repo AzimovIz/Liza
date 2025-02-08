@@ -130,8 +130,18 @@ class Module:
         return self.module.extensions
 
     def save_settings(self):
+        with open(f"{self.path}/settings.json", "r", encoding="utf-8") as file:
+            file_data: dict = json.load(file)
+
+        new_data = {
+            "is_active": self.settings.is_active,
+            "config": self.settings.config
+        }
+
+        file_data.update(new_data)
+
         with open(f"{self.path}/settings.json", "w", encoding="utf-8") as file:
-            json.dump(self.settings, file, ensure_ascii=False, indent=2)
+            json.dump(file_data, file, ensure_ascii=False, indent=2)
 
     def __bool__(self):
         if hasattr(self, "settings"):
@@ -226,9 +236,6 @@ class ModuleManager:
     def reload_module(self, name):
         self.modules[name].stop()
         self.init_module(name)
-
-    def get_module(self, module_name):
-        pass
 
     # async def _get_event(self, name: str = None):
     #     if not self.queues[name].output.empty():

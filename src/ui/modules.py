@@ -4,12 +4,12 @@ from textual import screen, widgets, app, on, containers
 from module_manager import ModuleManager, Module
 
 module_manager = ModuleManager()
-module_manager.init_modules()
 
 
 class OptionsEdit(widgets.Static):
     def compose(self) -> app.ComposeResult:
-        self.text_area = widgets.TextArea(text="Модуль не выбран", language="json", disabled=True, show_line_numbers=True)
+        self.text_area = widgets.TextArea(text="Модуль не выбран", language="json", disabled=True,
+                                          show_line_numbers=True)
         self.turn_on_swich = widgets.Switch(value=False, disabled=True, animate=False)
         self.turn_on_label = widgets.Label("\nАктивен\n")
         self.version_label = widgets.TextArea(text="Вер. \n", disabled=True)
@@ -27,39 +27,27 @@ class OptionsEdit(widgets.Static):
             yield self.text_area
 
     def from_option(self, option_name):
-        self.opened_file_name = f"modules/{option_name}/settings.json"
-        with open(self.opened_file_name, "r", encoding="utf-8") as file:
-            file_content = file.read()
-        plugin_data: dict = json.loads(file_content)
-        ver = plugin_data.pop("version")
-        is_active = plugin_data.pop("is_active")
-
-        self.version_label.text = f"Версия: {ver}\n"
+        module_manager.init_module(option_name)
+        self.module: Module = module_manager.modules[option_name]
+        self.version_label.text = f"Версия: {self.module.settings.version}\n"
         self.turn_on_swich.disabled = False
-        self.turn_on_swich.value = is_active
+        self.turn_on_swich.value = self.module.settings.is_active
 
         self.text_area.disabled = False
-        self.text_area.text = json.dumps(plugin_data["config"], indent=2, ensure_ascii=False)
+        self.text_area.text = json.dumps(self.module.settings.config, indent=2, ensure_ascii=False)
         self.update()
 
     def action_save(self):
-        with open(self.opened_file_name, "r", encoding="utf-8") as file:
-            file_data: dict = json.load(file)
-
-        new_data = {
-            "is_active": self.turn_on_swich.value,
-            "config": json.loads(self.text_area.text)
-        }
-
-        file_data.update(new_data)
-
-        with open(self.opened_file_name, "w", encoding="utf-8") as file:
-            json.dump(file_data, file, indent=2, ensure_ascii=False)
-
+        self.module.settings.is_active = self.turn_on_swich.value
+        self.module.settings.config = json.loads(self.text_area.text)
+        self.module.save_settings()
 
 
 class ModulesScreen(screen.Screen):
-    BINDINGS = [("escape", "app.pop_screen", "back")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+s", "save", "save")
+    ]
     TITLE = "Modules"
 
     def compose(self) -> app.ComposeResult:
@@ -67,7 +55,7 @@ class ModulesScreen(screen.Screen):
         yield widgets.Footer()
 
         yield widgets.Select(
-            [(f"{module.name} - {module.version}", module.name) for module in module_manager.modules.values()],
+            [(module, module) for module in module_manager.name_list],
             prompt="Выберите модуль"
         )
         self.option_layout = OptionsEdit("OptionsEdit", classes="box")
