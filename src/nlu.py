@@ -62,7 +62,7 @@ class NLU:
                 self.intent_names.append(intent)
         self.example_vectors = np.stack(self.example_vectors)
 
-        logger.info(f'Updated {self.intents.keys()}')
+        logger.info(f'Добавлены интенты {list(self.intents.keys())}')
 
 
 #

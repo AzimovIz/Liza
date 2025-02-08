@@ -1,6 +1,6 @@
 ver: "1.0"
 rules:
-  calendar_1:
+  silero_1:
     senders: []
     before_ext: []
     purposes: [say_silero]

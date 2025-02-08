@@ -57,6 +57,9 @@ class Module:
                 invalidate_caches()
                 self.module = reload(module=mm.modules[self.name].module)
             else:
+                if not os.path.isfile(f"{self.path}/main.py"):
+                    logger.error(f"Файл main.py не найден в модуле {self.name}")
+                    raise ModuleNotFoundError(f"{self.path}/main.py")
                 self.module: SubModule = import_module(f"{self.path.replace("/", ".")}.main")
 
         except ModuleNotFoundError:
