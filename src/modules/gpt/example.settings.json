@@ -6,6 +6,7 @@
     "openai_base": "",
     "token": "",
     "sys_prompt": "Ты ассистент который четко и правильно выполняет все команды. Не пиши ничего лишнего.",
+    "sys_context": "",
     "model": "",
     "generator_parameters": {
       "mode": "instruct",
