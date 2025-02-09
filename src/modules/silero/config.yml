@@ -5,5 +5,5 @@ rules:
     before_ext: []
     purposes: [say_silero]
     acceptors: [silero]
-#intent_examples:
-#  stop_gen_voice_silero: ["замолчи", "стоп", "отмена", "прекрати", "остановись"]
+intent_examples:
+  stop_gen_voice_silero: ["замолчи", "стоп", "отмена", "прекрати", "остановись"]
