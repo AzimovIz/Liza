@@ -3,7 +3,7 @@
   "is_active": true,
   "require_modules": ["vosk"],
   "config": {
-    "env_path": "modules/telegram_bot/.env",
+    "token": "5840388444:AAHxbrK6vZQ3d-NwdDEjP6AZ2z_7U-cgim4",
     "admin_id": 1060835059,
     "guest_text": "Только админ может мне писать!\nХочешь узнать больше о моих возможностях?\n\nhttps://github.com/AzimovIz/Liza - ищи меня тут)"
   }
