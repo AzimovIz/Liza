@@ -35,8 +35,8 @@ class OptionsEdit(widgets.Static):
         self.turn_on_swich.disabled = False
         self.turn_on_swich.value = self.module.settings.is_active
 
-        self.text_area.disabled = False
         self.text_area.text = json.dumps(self.module.settings.config, indent=2, ensure_ascii=False)
+        self.text_area.disabled = False
         self.update()
 
     def action_save(self):
@@ -44,10 +44,9 @@ class OptionsEdit(widgets.Static):
         self.module.settings.config = json.loads(self.text_area.text)
         self.module.save_settings()
 
-    @on(widgets.TextArea.Changed)
-    def on_change_text(self):
-        pass
-
+    # @on(widgets.TextArea.Changed)
+    # def on_change_text(self, event: widgets.TextArea.Changed):
+    #     self.text_area.border_title = "*"
 
 
 class ModulesScreen(screen.Screen):
@@ -65,11 +64,12 @@ class ModulesScreen(screen.Screen):
             [(module, module) for module in module_manager.name_list],
             prompt="Выберите модуль"
         )
-        self.option_layout = OptionsEdit("OptionsEdit", classes="box")
+        self.option_layout = OptionsEdit(classes="box")
         yield self.option_layout
 
     @on(widgets.Select.Changed)
     def select_changed(self, event: widgets.Select.Changed) -> None:
+        self.title = str(event.value)
         self.option_layout.from_option(str(event.value))
 
     def action_save(self):
