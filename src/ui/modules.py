@@ -1,6 +1,8 @@
 import json
 
 from textual import screen, widgets, app, on, containers
+from textual.binding import Binding
+
 from module_manager import ModuleManager, Module
 
 module_manager = ModuleManager()
@@ -41,6 +43,11 @@ class OptionsEdit(widgets.Static):
         self.module.settings.is_active = self.turn_on_swich.value
         self.module.settings.config = json.loads(self.text_area.text)
         self.module.save_settings()
+
+    @on(widgets.TextArea.Changed)
+    def on_change_text(self):
+        pass
+
 
 
 class ModulesScreen(screen.Screen):
