@@ -28,6 +28,7 @@ gpt_config: GPTConfig = None
 
 async def gpt_req(prompt, sys_prompt):
     global gpt_config
+    logger.debug(f"gpt prompt: {prompt}")
     data = {
         "messages": [
             {"role": "system", "content": sys_prompt or gpt_config.sys_prompt},
@@ -52,6 +53,7 @@ async def gpt_req(prompt, sys_prompt):
         response = await client.post(f"{gpt_config.url}/chat/completions", json=data, timeout=120, headers=headers)
 
     gpt_answer = response.json()['choices'][0]['message']['content']
+    logger.debug(f"gpt answer: {gpt_answer}")
     return gpt_answer
 
 
