@@ -45,7 +45,7 @@ class Calendar:
     def get_events(
             self,
             start: datetime = datetime.datetime.now(),
-            end: datetime = datetime.datetime.now() + datetime.timedelta(days=7)
+            end: datetime = datetime.datetime.now() + datetime.timedelta(days=30)
     ) -> List[ics.Event]:
         events = self._calendar.search(
             start=start,
