@@ -78,7 +78,7 @@ async def vosk_acceptor(
 
 def download_model_if_not_exited(model_name):
     MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
-    file_name = f"modules/vosk/{model_name}.zip"
+    file_name = f"modules/vosk/{model_name}"
 
     if os.path.isdir(file_name):
         return
@@ -98,12 +98,12 @@ def download_model_if_not_exited(model_name):
     with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=(model_name + ".zip")) as t:
         reporthook = download_progress_hook(t)
         urlretrieve(
-            MODEL_PRE_URL + model_name + ".zip", file_name,
+            MODEL_PRE_URL + model_name + ".zip", file_name + ".zip",
             reporthook=reporthook,
             data=None
         )
         t.total = t.n
-        with ZipFile(file_name, "r") as model_ref:
+        with ZipFile(file_name + ".zip", "r") as model_ref:
             model_ref.extractall(f"modules/vosk/")
         Path(file_name).unlink()
 
