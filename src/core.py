@@ -1,6 +1,7 @@
 import asyncio
 import os.path
 import pathlib
+import sys
 from typing import List, Dict
 
 from config import config_loader, Connection, IOPair
@@ -61,6 +62,7 @@ class Core:
         Инициализация модудей/расширений/интентов/NLU
         """
         self.MM.init_modules()
+        self.MM.add_named_queues("core")
 
         for module in self.MM.name_list:
             if os.path.isfile(module_conn := f"{self.path}/modules/{module}/config.yml"):
@@ -163,7 +165,6 @@ class Core:
             logger.error("Error running core, core already running")
             raise CoreAlreadyRunningException
 
-        self.MM.add_named_queues("core")
         await self.MM.run_modules()
 
         self._is_running = True
@@ -225,3 +226,6 @@ class Core:
     @property
     def is_running(self):
         return self._is_running
+
+    def reload(self):
+        os.execv(sys.executable, [sys.executable] + sys.argv)
