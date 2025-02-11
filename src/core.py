@@ -174,6 +174,7 @@ class Core:
             if self.forward_core_events:
                 if not self.MM.queues["core"].input.empty():
                     while not self.MM.queues["core"].input.empty():
+                        logger.debug("Core event forwarded!")
                         event = await self.MM.queues["core"].input.get()
                         await self.MM.queues["core"].output.put(event)
 

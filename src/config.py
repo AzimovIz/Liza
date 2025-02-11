@@ -129,10 +129,12 @@ class Connection:
             event = await extension.apply(event)
 
         for acceptor in self.acceptors:
-            if not mm.modules[acceptor].settings.is_active:
-                logger.error(f"Ошибка правила {self.name} модуль {acceptor} выключен")
-                continue
             await mm.queues[acceptor].input.put(event.copy())
+            if acceptor in mm.modules:
+                if not mm.modules[acceptor].settings.is_active:
+                    logger.warning(f"Ивент отправлен в выключенный модуль {acceptor} по правилу {self.name}")
+            else:
+                logger.warning(f"Ивент отправлен в очередь без модуля {acceptor} по правилу {self.name}")
 
 
 def config_loader(filename: str):
