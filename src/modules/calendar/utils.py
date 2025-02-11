@@ -62,9 +62,11 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
                 await create_event(event, calendar)
 
             elif event.purpose == "pre_add_event":
+                await event.reply("Создаю событие в календаре...")
                 await calendar_queue.put(event)
 
             elif event.purpose == "pre_get_event":
+                await event.reply("Сейчас уточню в календаре")
                 cal_events = [i.formated for i in calendar.get_events()]
                 event.cal_data = ';\n'.join(cal_events)
                 await calendar_queue.put(event)

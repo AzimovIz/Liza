@@ -20,11 +20,16 @@ from .audio_utils import filter_voice_gen
 logger = logging.getLogger("root")
 
 vosk_model = None
-buffer = None
+
+def cosine_dist(x, y):
+    nx = np.array(x)
+    ny = np.array(y)
+    return 1 - np.dot(nx, ny) / np.linalg.norm(nx) / np.linalg.norm(ny)
 
 
 def file_recognizer(file):
     global vosk_model
+    logger.debug("Vosk file recognize extension started")
     data, samplerate = soundfile.read(file)
     soundfile.write(file, data, samplerate)
 
@@ -41,7 +46,9 @@ def file_recognizer(file):
         rec.AcceptWaveform(data)
 
     if "text" in (recognized := json.loads(rec.FinalResult())):
+        logger.debug(f"Vosk file recognize extension text: {recognized['text']}")
         return recognized["text"]
+    logger.debug("Vosk file recognize extension failed")
     return "Не распознано("
 
 
@@ -72,9 +79,12 @@ async def vosk_acceptor(
                 logger.debug("vosk voice buffer unset!!!")
 
 
-def download_model(model_name):
+def download_model_if_not_exited(model_name):
     MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
-    file_name = f"modules/vosk/{model_name}.zip"
+    file_name = f"modules/vosk/{model_name}"
+
+    if os.path.isdir(file_name):
+        return
 
     def download_progress_hook(t):
         last_b = [0]
@@ -91,14 +101,38 @@ def download_model(model_name):
     with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=(model_name + ".zip")) as t:
         reporthook = download_progress_hook(t)
         urlretrieve(
-            MODEL_PRE_URL + model_name + ".zip", file_name,
+            MODEL_PRE_URL + model_name + ".zip", file_name + ".zip",
             reporthook=reporthook,
             data=None
         )
         t.total = t.n
-        with ZipFile(file_name, "r") as model_ref:
+        with ZipFile(file_name + ".zip", "r") as model_ref:
             model_ref.extractall(f"modules/vosk/")
         Path(file_name).unlink()
+
+
+def load_spk_sig():
+    if not os.path.isdir("modules/vosk/spk_data"):
+        logger.error("vosk: нет папки сигнатур, распознование не запущено")
+        raise Exception
+
+    spks = []
+
+    for file in os.listdir("modules/vosk/spk_data"):
+        with open(os.path.join("modules/vosk/spk_data", file), "rb") as f:
+            data = json.load(f)
+            spks.append(data["spk_sig"])
+
+    return spks
+
+
+def check_spk(spks, data):
+    for spk in spks:
+        print("X-vector:", data)
+        print("Speaker distance:", cosine_dist(spk, data))
+        if cosine_dist(spk, data) < 0.68:
+            return True
+    return False
 
 
 async def run_vosk(
@@ -112,11 +146,16 @@ async def run_vosk(
     send_text_event = config["send_text_event"]
     ext_only = config["ext_only"]
     trigger_name = config["trigger_name"]
+    filter_spk = config["filter_spk"]
+    spk_model = config["spk_model"]
+
+    if filter_spk:
+        allowed_spks = load_spk_sig()
+
 
     model_dir_path = f"modules/vosk/{model_name}"
 
-    if not os.path.isdir(model_dir_path):
-        download_model(model_name=model_name)
+    download_model_if_not_exited(model_name=model_name)
 
     if vosk_model is None:
         vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
@@ -125,6 +164,11 @@ async def run_vosk(
         return
 
     rec = vosk.KaldiRecognizer(vosk_model, 44100)
+
+    if filter_spk:
+        download_model_if_not_exited(model_name=spk_model)
+        spk_model = vosk.SpkModel(f"modules/vosk/{spk_model}")
+        rec.SetSpkModel(spk_model)
 
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,
@@ -156,6 +200,7 @@ async def run_vosk(
             voice_input_str: str = recognized_data["text"]
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
+
                 if len(names):
                     for name in names:
                         if name not in voice_input_str:
@@ -170,17 +215,29 @@ async def run_vosk(
                         logger.debug("Имя не найдено!")
                         continue
 
+                if filter_spk and not ("spk" in recognized_data and check_spk(allowed_spks, recognized_data["spk"])):
+                    await queue.put(
+                        Event(
+                            event_type=EventTypes.text,
+                            value=voice_input_str,
+                            purpose="spk_unverified"
+                        )
+                    )
+                    continue
+
                 await queue.put(
                     Event(
                         event_type=EventTypes.user_command,
-                        value=voice_input_str
+                        value=voice_input_str,
+                        spk=recognized_data["spk"]
                     )
                 )
                 if send_text_event:
                     await queue.put(
                         Event(
                             event_type=EventTypes.text,
-                            value=voice_input_str
+                            value=voice_input_str,
+                            spk=recognized_data["spk"]
                         )
                     )
 

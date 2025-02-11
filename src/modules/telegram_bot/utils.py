@@ -113,11 +113,7 @@ async def run_client(queue: asyncio.Queue, config: dict):
 
     admin_id = config["admin_id"]
     guest_text = config["guest_text"]
-
-    token = os.getenv("TG_BOT_TOKEN")
-    if not token:
-        logger.error("Telegram bot token not set, to use telegram bot - set token as TG_BOT_TOKEN in env")
-        return
+    token = config["token"]
 
     try:
         bot = Bot(token=token)
@@ -127,6 +123,7 @@ async def run_client(queue: asyncio.Queue, config: dict):
         dp = Dispatcher(storage=MemoryStorage())
         dp.include_router(router)
     except:
+        logger.error("Телеграм бот не может быть запущен!", exc_info=True)
         return
 
     await bot.delete_webhook(drop_pending_updates=True)

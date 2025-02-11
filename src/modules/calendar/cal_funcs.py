@@ -45,7 +45,7 @@ class Calendar:
     def get_events(
             self,
             start: datetime = datetime.datetime.now(),
-            end: datetime = datetime.datetime.now() + datetime.timedelta(days=7)
+            end: datetime = datetime.datetime.now() + datetime.timedelta(days=30)
     ) -> List[ics.Event]:
         events = self._calendar.search(
             start=start,
@@ -57,8 +57,8 @@ class Calendar:
         for event in events:
             ics_cal = ics.Calendar(event.data)
             ics_event = list(ics_cal.events)[0]
-            ics_event.begin = ics_event.begin.astimezone(tz=self.tzinfo)
-            ics_event.end = ics_event.end.astimezone(tz=self.tzinfo)
+            # ics_event.begin = ics_event.begin.astimezone(tz=self.tzinfo)
+            # ics_event.end = ics_event.end.astimezone(tz=self.tzinfo)
             ics_event.formated = formated(ics_event)
             filtered_events.append(ics_event)
 

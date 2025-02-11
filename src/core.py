@@ -1,5 +1,7 @@
 import asyncio
 import os.path
+import pathlib
+import sys
 from typing import List, Dict
 
 from config import config_loader, Connection, IOPair
@@ -33,6 +35,7 @@ class Core:
             connection_config_path: str = None,
             minimum_nlu_percent: float = None,
             forward_core_events: bool = None,
+            core_path: str = None,
     ):
         """
         Инициализация класса с настройками соединения и параметрами обработки NLU.
@@ -43,7 +46,7 @@ class Core:
         """
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.min_nlu_percent = minimum_nlu_percent or float(os.getenv("MINIMUM_NLU_PERCENT")) or 1.0
+        self.min_nlu_percent = minimum_nlu_percent or float(os.getenv("MINIMUM_NLU_PERCENT") or 1)
         config = config_loader(connection_config_path or os.getenv("CONNECTION_CONFIG_PATH") or "connections/config.yml")
         self.connection_rules = config["rules"]
         self.io_pairs = config["io_pairs"]
@@ -51,16 +54,18 @@ class Core:
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
-        self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS"))) or True
+        self.forward_core_events = bool(forward_core_events or os.getenv("FORWARD_CORE_EVENTS") or 1)
+        self.path = core_path or pathlib.Path(__file__).parent.absolute()
 
     def init(self):
         """
         Инициализация модудей/расширений/интентов/NLU
         """
         self.MM.init_modules()
+        self.MM.add_named_queues("core")
 
         for module in self.MM.name_list:
-            if os.path.isfile(module_conn := f"modules/{module}/config.yml"):
+            if os.path.isfile(module_conn := f"{self.path}/modules/{module}/config.yml"):
                 module_config = config_loader(module_conn)
                 self.connection_rules.extend(module_config["rules"])
                 self.io_pairs.extend(module_config["io_pairs"])
@@ -79,6 +84,7 @@ class Core:
         for connection in self.connection_rules:
             try:
                 connection.init_extensions(self.MM)
+                logger.debug(f"Правило {connection.name} добавлено!")
             except KeyError as e:
                 logger.error(f"Ошибка правила {connection.name} расширение {e.args} не найдено")
                 self.connection_rules.remove(connection)
@@ -159,7 +165,6 @@ class Core:
             logger.error("Error running core, core already running")
             raise CoreAlreadyRunningException
 
-        self.MM.add_named_queues("core")
         await self.MM.run_modules()
 
         self._is_running = True
@@ -169,6 +174,7 @@ class Core:
             if self.forward_core_events:
                 if not self.MM.queues["core"].input.empty():
                     while not self.MM.queues["core"].input.empty():
+                        logger.debug("Core event forwarded!")
                         event = await self.MM.queues["core"].input.get()
                         await self.MM.queues["core"].output.put(event)
 
@@ -221,3 +227,6 @@ class Core:
     @property
     def is_running(self):
         return self._is_running
+
+    def reload(self):
+        os.execv(sys.executable, [sys.executable] + sys.argv)

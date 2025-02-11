@@ -23,18 +23,19 @@ def return_blank_list_if_not_active(func: callable) -> callable:
 class Module:
     def __init__(self, name, mm: 'ModuleManager'):
         self.name = name
+        self.path = f"{mm.base_path}/{self.name}"
         self.module: SubModule = None
         self.queues: ModuleQueues = ModuleQueues(name=self.name)
-        if not os.path.isfile(f"modules/{self.name}/settings.json"):
-            if os.path.isfile(f"modules/{self.name}/example.settings.json"):
+        if not os.path.isfile(f"{self.path}/settings.json"):
+            if os.path.isfile(f"{self.path}/example.settings.json"):
                 shutil.copyfile(
-                    src=f"modules/{self.name}/example.settings.json",
-                    dst=f"modules/{self.name}/settings.json"
+                    src=f"{self.path}/example.settings.json",
+                    dst=f"{self.path}/settings.json"
                 )
             else:
                 logger.error(
-                    f"modules/{self.name}/settings.json и "
-                    f"modules/{self.name}/example.settings.json не найдены, "
+                    f"{self.path}/settings.json и "
+                    f"{self.path}/example.settings.json не найдены, "
                     f"невозможно инициализировать {self.name}"
                 )
                 self.settings = Settings(
@@ -45,7 +46,7 @@ class Module:
                 )
                 return
 
-        with open(f"modules/{self.name}/settings.json", "r", encoding="utf-8") as file:
+        with open(f"{self.path}/settings.json", "r", encoding="utf-8") as file:
             self.settings = Settings.from_dict(json.load(file))
 
         if not self.settings.is_active:
@@ -56,7 +57,10 @@ class Module:
                 invalidate_caches()
                 self.module = reload(module=mm.modules[self.name].module)
             else:
-                self.module: SubModule = import_module(f"modules.{self.name}.main")
+                if not os.path.isfile(f"{self.path}/main.py"):
+                    logger.error(f"Файл main.py не найден в модуле {self.name}")
+                    raise ModuleNotFoundError(f"{self.path}/main.py")
+                self.module: SubModule = import_module(f"{self.path.replace("/", ".")}.main")
 
         except ModuleNotFoundError:
             self.settings.is_active = False
@@ -126,8 +130,18 @@ class Module:
         return self.module.extensions
 
     def save_settings(self):
-        with open(f"modules/{self.name}/settings.json", "w", encoding="utf-8") as file:
-            json.dump(self.settings, file, ensure_ascii=False, indent=2)
+        with open(f"{self.path}/settings.json", "r", encoding="utf-8") as file:
+            file_data: dict = json.load(file)
+
+        new_data = {
+            "is_active": self.settings.is_active,
+            "config": self.settings.config
+        }
+
+        file_data.update(new_data)
+
+        with open(f"{self.path}/settings.json", "w", encoding="utf-8") as file:
+            json.dump(file_data, file, ensure_ascii=False, indent=2)
 
     def __bool__(self):
         if hasattr(self, "settings"):
@@ -136,9 +150,10 @@ class Module:
 
 
 class ModuleManager:
-    def __init__(self):
-        self.name_list = [dir_name for dir_name in os.listdir("modules") if
-                          os.path.isdir(f"modules/{dir_name}") and not dir_name.startswith("__")]
+    def __init__(self, base_path="modules"):
+        self.base_path = base_path
+        self.name_list = [dir_name for dir_name in os.listdir(self.base_path) if
+                          os.path.isdir(f"{self.base_path}/{dir_name}") and not dir_name.startswith("__")]
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
@@ -204,7 +219,6 @@ class ModuleManager:
 
         logger.debug("очереди созданы")
 
-
     @property
     def queues(self):
         data = {}
@@ -222,9 +236,6 @@ class ModuleManager:
     def reload_module(self, name):
         self.modules[name].stop()
         self.init_module(name)
-
-    def get_module(self, module_name):
-        pass
 
     # async def _get_event(self, name: str = None):
     #     if not self.queues[name].output.empty():
