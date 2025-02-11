@@ -57,8 +57,8 @@ class Calendar:
         for event in events:
             ics_cal = ics.Calendar(event.data)
             ics_event = list(ics_cal.events)[0]
-            ics_event.begin = ics_event.begin.astimezone(tz=self.tzinfo)
-            ics_event.end = ics_event.end.astimezone(tz=self.tzinfo)
+            # ics_event.begin = ics_event.begin.astimezone(tz=self.tzinfo)
+            # ics_event.end = ics_event.end.astimezone(tz=self.tzinfo)
             ics_event.formated = formated(ics_event)
             filtered_events.append(ics_event)
 
