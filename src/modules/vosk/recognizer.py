@@ -29,6 +29,7 @@ def cosine_dist(x, y):
 
 def file_recognizer(file):
     global vosk_model
+    logger.debug("Vosk file recognize extension started")
     data, samplerate = soundfile.read(file)
     soundfile.write(file, data, samplerate)
 
@@ -45,7 +46,9 @@ def file_recognizer(file):
         rec.AcceptWaveform(data)
 
     if "text" in (recognized := json.loads(rec.FinalResult())):
+        logger.debug(f"Vosk file recognize extension text: {recognized['text']}")
         return recognized["text"]
+    logger.debug("Vosk file recognize extension failed")
     return "Не распознано("
 
 
