@@ -54,7 +54,7 @@ class Core:
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
-        self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS") or 1))
+        self.forward_core_events = bool(forward_core_events or os.getenv("FORWARD_CORE_EVENTS") or 1)
         self.path = core_path or pathlib.Path(__file__).parent.absolute()
 
     def init(self):
