@@ -12,6 +12,96 @@ from collections import Counter
 
 logger = logging.getLogger(__name__)
 
+from typing import List
+
+import httpx
+
+INSTRUCT_TEMPLATE = """{% if 'role' in messages[0] %}
+ {% for message in messages %}
+  {% if message['role'] == 'user' %}
+    {{'<|im_start|>user' + message['content'] + '<|im_end|>'}}
+  {% elif message['role'] == 'assistant'%}
+    {{'<|im_start|>assistant' + message['content'] + '<|im_end|>' }}
+  {% else %}
+    {{ '<|im_start|>system' + message['content'] + '<|im_end|>' }}
+  {% endif %}
+ {% endfor %}
+{% endif %}"""
+
+CLASSIFICATION_PROMPT_TEMPLATE = """Напиши название интента которому относиться фраза: "{text}"
+Список интентов с примерами:
+{intents}
+В ответ не пиши ничего кроме названия интента!"""
+
+
+class GPT_API:
+    def __init__(self):
+        self.api_base = os.getenv("GPT_API", None)
+        self.api_token = os.getenv("GPT_TOKEN", None)
+        self.model = os.getenv("GPT_MODEL", None)
+
+    def req(self, prompt, sys_prompt=None):
+        data = {
+            "messages": [
+                {"role": "system", "content": sys_prompt or ""},
+                {"role": "user", "content": prompt}
+            ],
+            "mode": "instruct",
+            "min_p": 0.38,
+            "max_tokens": 50,
+            "instruction_template_str": INSTRUCT_TEMPLATE,
+        }
+
+        if self.model:
+            data.update({"model": self.model})
+
+        headers = {"Content-Type": "application/json"}
+        if self.api_token:
+            headers.update({"Authorization": f"Bearer {self.api_token}"})
+
+        with httpx.Client(verify=False) as client:
+            response = client.post(f"{self.api_base}/chat/completions", json=data, timeout=120, headers=headers)
+
+        gpt_answer = response.json()['choices'][0]['message']['content']
+        return gpt_answer
+
+    def req_chat(self, prompt, sys_prompt=None, chat_data=List[dict]):
+        data = {
+            "messages": [
+                {"role": "system", "content": sys_prompt or ""},
+                {"role": "user", "content": prompt}
+            ]
+        }
+        if self.model:
+            data.update({"model": self.model})
+
+        headers = {"Content-Type": "application/json"}
+        if self.api_token:
+            headers.update({"Authorization": f"Bearer {self.api_token}"})
+
+        with httpx.Client(verify=False) as client:
+            response = client.post(f"{self.api_base}/chat/completions", json=data, timeout=120, headers=headers)
+
+        gpt_answer = response.json()['choices'][0]['message']['content']
+        return gpt_answer
+
+
+class NLU_GPT:
+    def __init__(self, intents: dict):
+        self.intents = intents
+        self.gpt = GPT_API()
+        self.update_intents()
+
+    def classify_text(self, text, minimum_percent=0.0):
+        answer = self.gpt.req(CLASSIFICATION_PROMPT_TEMPLATE.format(text=text, intents=str(self.intents)))
+        return answer
+
+    def update_intents(self, new_intents: dict = None):
+        if new_intents is not None:
+            self.intents.update(new_intents)
+
+        logger.info(f'Добавлены интенты {list(self.intents.keys())}')
+
 
 class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
