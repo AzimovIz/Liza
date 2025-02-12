@@ -1,0 +1,40 @@
+ver: "1.0"
+rules:
+  tg_userbot_1:
+    senders: []
+    before_ext: [[ask_gpt, {prompt: 'Ты общаешься в чате, у тебя спросили: "%event_value%"
+Для ответа ты можешь использовать контекст:
+%event_qdrant_context%
+
+***
+Если с учетом всех данных невозможно ответить на вопрос - Напиши что ответишь как только будет возможность'}], [change_purpose, {new_purpose: "outcoming_tg_userbot"}]]
+    purposes: [incoming_tg_bot]
+    acceptors: [tg_userbot]
+  tg_userbot_2:
+    senders: []
+    before_ext: [[ask_gpt, {prompt: 'Сформируй json для сообщения: "%event_value%"
+Список известных пользователей - список из id и имен пользователя:
+%event_allowed_chats%
+***
+
+Пример: "напиши максиму как дела"
+Ответ:
+{
+  "chat_id": 23874295,
+  "text": "Как дела?"
+
+***
+Если нет подходящего пользователя - пришли пустой json: {}
+В ответ не пиши ничего кроме json'}], [change_purpose, {new_purpose: "send_message"}]]
+    purposes: [outcoming_tg_userbot]
+    acceptors: [tg_userbot]
+
+#intent_examples:
+#  add_event: [
+#    "запомни какое-то событие",
+#    "запиши что мне надо", "добавь событие о чем-то",
+#    "напомни мне об этом позже",
+#    "напомни через час полить цветы",
+#    "запомни сделать что-то завтра",
+#    "добавь событие в календарь"
+#  ]

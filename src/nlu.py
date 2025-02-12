@@ -86,13 +86,13 @@ class GPT_API:
         return gpt_answer
 
 
-class NLU_GPT:
+class NLU:
     def __init__(self, intents: dict):
         self.intents = intents
         self.gpt = GPT_API()
         self.update_intents()
 
-    def classify_text(self, text, minimum_percent=0.0):
+    def classify_text(self, text):
         answer = self.gpt.req(CLASSIFICATION_PROMPT_TEMPLATE.format(text=text, intents=str(self.intents)))
         return answer
 
@@ -103,56 +103,56 @@ class NLU_GPT:
         logger.info(f'Добавлены интенты {list(self.intents.keys())}')
 
 
-class NLU:
-    # cointegrated/LaBSE-en-ru - 0.7
-    # cointegrated/roberta-base-formality - 0.97
-    # cointegrated/rubert-tiny2 - 0.86
-    # cointegrated/rubert-tiny2-sentence-compression - 0.68
-    def __init__(self, intents: dict, model_name: str = None):
-        self.intents = intents
-        self.example_vectors = []
-        self.intent_names = []
-        model_name = model_name or os.getenv("MODEL_NAME") or "cointegrated/rubert-tiny2-sentence-compression"
-        self.model = AutoModel.from_pretrained(model_name, cache_dir="cache")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
-
-        self.update_intents()
-
-    def embed_bert_cls(self, text):
-        t = self.tokenizer(text, padding=True, truncation=True, max_length=12, return_tensors='pt')
-        t = {k: v.to(self.model.device) for k, v in t.items()}
-        with torch.no_grad():
-            model_output = self.model(**t)
-        embeddings = model_output.last_hidden_state[:, 0, :]
-        embeddings = torch.nn.functional.normalize(embeddings)
-        return embeddings[0].cpu().numpy()
-
-    def classify_text(self, text, minimum_percent=0.0):
-        intent = list(filter(lambda i: text in self.intents[i], self.intents.keys()))
-        if len(intent):
-            return [[intent[0], 1.0]]
-
-        vector = self.embed_bert_cls(text)
-        scores = np.dot(self.example_vectors, vector)
-        result = Counter()
-        for score, intent in zip(scores, self.intent_names):
-            result[intent] = max(result[intent], score)
-        return [i for i in result.most_common() if i[1] >= minimum_percent]
-
-    def update_intents(self, new_intents: dict = None):
-        if new_intents is not None:
-            self.intents.update(new_intents)
-
-        if not self.intents:
-            return
-
-        for intent, texts in self.intents.items():
-            for text in texts:
-                self.example_vectors.append(self.embed_bert_cls(text))
-                self.intent_names.append(intent)
-        self.example_vectors = np.stack(self.example_vectors)
-
-        logger.info(f'Добавлены интенты {list(self.intents.keys())}')
+# class NLU:
+#     # cointegrated/LaBSE-en-ru - 0.7
+#     # cointegrated/roberta-base-formality - 0.97
+#     # cointegrated/rubert-tiny2 - 0.86
+#     # cointegrated/rubert-tiny2-sentence-compression - 0.68
+#     def __init__(self, intents: dict, model_name: str = None):
+#         self.intents = intents
+#         self.example_vectors = []
+#         self.intent_names = []
+#         model_name = model_name or os.getenv("MODEL_NAME") or "cointegrated/rubert-tiny2-sentence-compression"
+#         self.model = AutoModel.from_pretrained(model_name, cache_dir="cache")
+#         self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
+#
+#         self.update_intents()
+#
+#     def embed_bert_cls(self, text):
+#         t = self.tokenizer(text, padding=True, truncation=True, max_length=12, return_tensors='pt')
+#         t = {k: v.to(self.model.device) for k, v in t.items()}
+#         with torch.no_grad():
+#             model_output = self.model(**t)
+#         embeddings = model_output.last_hidden_state[:, 0, :]
+#         embeddings = torch.nn.functional.normalize(embeddings)
+#         return embeddings[0].cpu().numpy()
+#
+#     def classify_text(self, text, minimum_percent=0.0):
+#         intent = list(filter(lambda i: text in self.intents[i], self.intents.keys()))
+#         if len(intent):
+#             return [[intent[0], 1.0]]
+#
+#         vector = self.embed_bert_cls(text)
+#         scores = np.dot(self.example_vectors, vector)
+#         result = Counter()
+#         for score, intent in zip(scores, self.intent_names):
+#             result[intent] = max(result[intent], score)
+#         return [i for i in result.most_common() if i[1] >= minimum_percent]
+#
+#     def update_intents(self, new_intents: dict = None):
+#         if new_intents is not None:
+#             self.intents.update(new_intents)
+#
+#         if not self.intents:
+#             return
+#
+#         for intent, texts in self.intents.items():
+#             for text in texts:
+#                 self.example_vectors.append(self.embed_bert_cls(text))
+#                 self.intent_names.append(intent)
+#         self.example_vectors = np.stack(self.example_vectors)
+#
+#         logger.info(f'Добавлены интенты {list(self.intents.keys())}')
 
 
 #

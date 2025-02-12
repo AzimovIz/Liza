@@ -1,6 +1,6 @@
-from .userbot import run_bot
+from .userbot import run_bot, acceptor
 
-# acceptor = vosk_acceptor
+acceptor = acceptor
 
 sender = run_bot
 
