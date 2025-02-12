@@ -3,6 +3,8 @@
   "is_active": false,
   "require_modules": [],
   "config": {
+    "APP_ID": 1234567,
+    "APP_HASH": "abcd123510b3123349d867a123557b12",
     "allowed_chats": [1060835059],
     "use_qdrant": false
   }

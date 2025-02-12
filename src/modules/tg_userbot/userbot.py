@@ -16,14 +16,9 @@ async def run_bot(
         config: dict = None,
 ):
     allowed_chats = config["allowed_chats"]
-    use_qdrant = config["use_qdrant"]
-
-    app_id = os.getenv("TG_APP_ID", None)
-    app_hash = os.getenv("TG_APP_HASH", None)
-
-    if app_id is None or app_hash is None:
-        logger.error("td_userbot error: env values TG_APP_ID and TG_APP_HASH are not defined, visit https://my.telegram.org/apps")
-        return
+    app_id = config["APP_ID"]
+    app_hash = config["APP_HASH"]
+    #use_qdrant = config["use_qdrant"]
 
     app = Client(
         api_id=app_id,
