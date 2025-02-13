@@ -94,7 +94,7 @@ class Core:
             return
 
         command_str = event.value
-        logger.debug(f"command: {command_str}")
+        logger.info(f"command: {command_str}")
         intent = self.nlu.classify_text(text=command_str, minimum_percent=self.min_nlu_percent)
 
         if not len(intent):
@@ -108,7 +108,7 @@ class Core:
         if len(intent) == 1:
             await asyncio.create_task(intent[0].run(event, self.MM))
 
-        logger.debug(f"command: {command_str} start")
+        logger.info(f"command: {command_str} start")
 
     def get_out_queues(self, name):
         for pair in self.io_pairs:

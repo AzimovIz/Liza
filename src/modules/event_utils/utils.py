@@ -32,6 +32,12 @@ def set_value(event: Event, new_value: str = "none"):
     return event
 
 
+def save_value(event: Event):
+    logger.info(f"Event value {event.value} saved to .old_value")
+    event.old_value = str(event.value)
+    return event
+
+
 async def reply(event: Event):
     await event.reply(event.value)
     return event

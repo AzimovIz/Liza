@@ -9,7 +9,7 @@ import logging
 from event import Event
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("root")
 
 
 @dataclass
@@ -58,6 +58,7 @@ async def gpt_req(prompt, sys_prompt):
 
 
 async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Event:
+    logger.debug(f"extension ask_gpt give prompt: {prompt}")
     context_items = {
         "%date%": lambda: datetime.now().strftime("%B %d, %Y"),
         "%time%": lambda: datetime.now().strftime("%H:%M:%S"),

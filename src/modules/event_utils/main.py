@@ -1,5 +1,5 @@
 import logging
-from .utils import num_to_word, change_type, change_purpose, json_find, set_value, reply
+from .utils import num_to_word, change_type, change_purpose, json_find, set_value, save_value, reply
 
 logger = logging.getLogger("root")
 
@@ -20,6 +20,10 @@ extensions = [
     {
         "name": "set_value",
         "function": set_value
+    },
+    {
+        "name": "save_value",
+        "function": save_value
     },
     {
         "name": "reply",

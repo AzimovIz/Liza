@@ -98,19 +98,25 @@ class Module:
             except Exception as e:
                 logger.error(f"Error func init() in module {self.name}: {e}", exc_info=True)
 
+    async def _run_queue(self, func: callable, queue):
+        try:
+            await func(queue=queue, config=self.settings.as_dict)
+        except:
+            logger.error(f"Module {self.name} error in queue", exc_info=True)
+
     async def run(self):
         if not self.settings.is_active:
             return
 
         if self.module.sender:
             self.sender_task = asyncio.create_task(
-                self.module.sender(queue=self.queues.output, config=self.settings.as_dict)
+                self._run_queue(func=self.module.sender, queue=self.queues.output)
             )
             self.queues.output.is_active = True
 
         if self.module.acceptor:
             self.acceptor_task = asyncio.create_task(
-                self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict)
+                self._run_queue(func=self.module.acceptor, queue=self.queues.input)
             )
             self.queues.input.is_active = True
 

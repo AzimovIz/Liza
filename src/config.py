@@ -17,8 +17,9 @@ class DefaultLoader:
 
 
 class Extension:
-    def __init__(self, target_func, **kwargs):
+    def __init__(self, target_func, name: str = "None", **kwargs):
         self.target_func = target_func
+        self.name = name
         self.kwargs = kwargs
 
     async def apply(self, event: Event):
@@ -98,9 +99,9 @@ class Connection:
         init_exts: List[Extension] = []
         for extension in self.before_ext:
             if isinstance(extension, str):
-                init_exts.append(Extension(mm.extensions[extension]))
+                init_exts.append(Extension(mm.extensions[extension], name=extension))
             if isinstance(extension, list) and len(extension) == 2:
-                init_exts.append(Extension(mm.extensions[extension[0]], **extension[1]))
+                init_exts.append(Extension(mm.extensions[extension[0]], name=extension[0], **extension[1]))
 
         self.before_ext = init_exts
 
@@ -127,6 +128,7 @@ class Connection:
 
         for extension in self.before_ext:
             event = await extension.apply(event)
+            logger.debug(f"К ивенту применено расширение {extension.name} по правилу {self.name}")
 
         for acceptor in self.acceptors:
             await mm.queues[acceptor].input.put(event.copy())
@@ -135,6 +137,7 @@ class Connection:
                     logger.warning(f"Ивент отправлен в выключенный модуль {acceptor} по правилу {self.name}")
             else:
                 logger.warning(f"Ивент отправлен в очередь без модуля {acceptor} по правилу {self.name}")
+            logger.debug(f"Ивент отправлен в модуль {acceptor} по правилу {self.name}")
 
 
 def config_loader(filename: str):

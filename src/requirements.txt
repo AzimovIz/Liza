@@ -23,3 +23,5 @@ ics==0.7.2
 scipy==1.14.1
 pyrogram==2.0.106
 TgCrypto==1.2.5
+qdrant-client==1.13.2
+sentence-transformers==3.4.1

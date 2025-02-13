@@ -55,12 +55,15 @@ class Intent:
 
     async def run(self, event: Event, mm: 'ModuleManager'):
         if self.function:
+            logger.debug(f"Запуск функции интента {self.name}")
             await self._run_func(event)
         if self.queue:
+            logger.debug(f"Перенаправление ивента в очередь {self.queue}, интент: {self.name}")
             event.event_type = EventTypes.text
             if self.purpose:
                 event.purpose = self.purpose
             await mm.queues[self.queue].input.put(event)
+        logger.info(f"Интент {self.name} запущен")
 
 
 class AsyncModuleQueue(asyncio.Queue):
@@ -69,11 +72,11 @@ class AsyncModuleQueue(asyncio.Queue):
         self.name = name
         self.is_active = is_active
 
-    async def put(self, value):
-        if not self.is_active:
-            logger.error(f"Очередь {self.name} неактивна, возможно модуль выключен")
+    async def put(cls, value):
+        if not cls.is_active:
+            logger.warning(f"Очередь {cls.name} неактивна, возможно модуль выключен")
         if isinstance(value, Event) and value.from_module is None:
-            value.from_module = self.name
+            value.from_module = cls.name
 
         return await super().put(value)
 

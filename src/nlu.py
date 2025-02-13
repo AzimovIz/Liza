@@ -92,10 +92,9 @@ class NLU:
         self.gpt = GPT_API()
         self.update_intents()
 
-    def classify_text(self, text):
+    def classify_text(self, text, *args, **kwargs):
         answer = self.gpt.req(CLASSIFICATION_PROMPT_TEMPLATE.format(text=text, intents=str(self.intents)))
-        return answer
-
+        return [[answer, 1.0],]
     def update_intents(self, new_intents: dict = None):
         if new_intents is not None:
             self.intents.update(new_intents)
