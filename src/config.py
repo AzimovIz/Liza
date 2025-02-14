@@ -22,7 +22,7 @@ class Extension:
         self.name = name
         self.kwargs = kwargs
 
-    async def apply(self, event: Event):
+    async def apply(self, event: Event) -> Event:
         if asyncio.iscoroutinefunction(self.target_func):
             applied_event = await self.target_func(event, **self.kwargs)
         else:

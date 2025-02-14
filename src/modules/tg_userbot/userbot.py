@@ -31,6 +31,7 @@ async def incoming(client, message: types.Message):
             purpose="incoming_tg_bot",
             out_queue=None
         )
+        event.reply = message.reply
         await client.output_queue.put(event)
 
 
@@ -74,12 +75,10 @@ async def run_bot(
                     is_enable = event.purpose == "enable"
                     await event.reply(f"Автоответчик {'включен' if event.purpose == 'enable' else 'выключен'}")
 
-                elif event.purpose == "incoming_tg_userbot":
-                    pass
-
                 elif event.purpose == "outcoming_tg_userbot":
-                    event.allowed_chats = str(app.allowed_chats)
-                    await app.output_queue.put(event)
+                    pass
+                    # event.allowed_chats = str(app.allowed_chats)
+                    # await app.output_queue.put(event)
 
                 elif event.purpose == "send_message":
                     data = event.value

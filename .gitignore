@@ -1,3 +1,9 @@
 /src/modules/*/settings.json
 /src/cache/
 /src/.env
+*__pycache__/
+docs/_build/
+*.obsidian
+*spk_data/
+*.idea/
+*.vscode/

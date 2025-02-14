@@ -38,14 +38,7 @@ class Event:
 
     @staticmethod
     def from_dict(data: dict):
-        event_type = data.pop("event_type")
-        value = data.pop("value")
-        event = Event(
-            event_type=event_type,
-            value=value,
-            **data
-        )
-        return event
+        return Event(**data)
 
     def to_dict(self):
         data = {
