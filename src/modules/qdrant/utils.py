@@ -35,3 +35,22 @@ def add_qdrant_context(event: Event):
         event.qdrant_context = "\n".join([point.payload["text"] for point in rez.points])
 
     return event
+
+
+def save_to_qdrant(event: Event):
+    global q_client, model
+    vector = model.encode(text)
+    collection = q_client.get_collection(q_client.collection_name)
+    q_client.upsert(
+        collection_name=q_client.collection_name,
+        points=[
+            models.PointStruct(
+                id=collection.points_count,
+                payload={
+                    "text": text
+                },
+                vector=vector
+            ),
+        ]
+    )
+    return event
