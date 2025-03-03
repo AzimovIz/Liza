@@ -122,6 +122,12 @@ class Module:
         self.acceptor_task.cancel()
         self.sender_task.cancel()
 
+        if hasattr(self.module, "stop"):
+            try:
+                self.module.stop()
+            except Exception as e:
+                logger.error(f"Error stop() in module {self.name}: {e}", exc_info=True)
+
     def get_settings(self):
         return self.settings
 
@@ -236,6 +242,11 @@ class ModuleManager:
     def reload_module(self, name):
         self.modules[name].stop()
         self.init_module(name)
+
+    def stop_modules(self):
+        for module in self.modules.values():
+            if module.settings.is_active:
+                module.stop()
 
     # async def _get_event(self, name: str = None):
     #     if not self.queues[name].output.empty():

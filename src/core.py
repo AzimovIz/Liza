@@ -171,6 +171,10 @@ class Core:
         while True:
             await asyncio.sleep(0)
 
+            if not self._is_running:
+                logger.info("Stop Core")
+                return
+
             if self.forward_core_events:
                 if not self.MM.queues["core"].input.empty():
                     while not self.MM.queues["core"].input.empty():
@@ -191,6 +195,10 @@ class Core:
                     event.out_queue = self.get_out_queues(name)
 
                 await self.run_event(event)
+
+    def stop(self):
+        self._is_running = False
+        self.MM.stop_modules()
 
     async def get_module(self, module_name):
         return self.MM.get_module(module_name)
